@@ -2,6 +2,7 @@ import fs from "fs";
 import csv from "csv-parser";
 import { Tool } from "../Model/toolsModel.js";
 
+//add tool through CSV
 export const addTool = async (req, res) => {
   try {
     if (!req.file) {
@@ -52,30 +53,39 @@ export const addTool = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
-
+//add tool through login user
 export const AddTool = async (req, res) => {
   try {
-    const { name, link, thumbnail_url, image_url, category } = req.body;
-    if (!name || !link || !thumbnail_url || !image_url || !category)
+    const { name, link, thumbnail_url, image_url, key_features } = req.body;
+    console.log(req.user);
+    const userID = req.user;
+    console.log(userID);
+    if (!name || !link || !thumbnail_url || !image_url || !key_features)
       return res
         .status(400)
         .json({ message: "All fields are required", success: false });
-    await Tool.save();
+    const add = await Tool.create({
+      name,
+      link,
+      thumbnail_url,
+      image_url,
+      key_features,
+      submitted_by: userID,
+    });
     return res
       .status(200)
-      .json({ message: "Tool add SuccessFully", success: true });
+      .json({ message: "Tool add SuccessFully", success: true, add });
   } catch (error) {
     return res
       .status(500)
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
-
+//submit tool via Admin
 export const submitTool = async (req, res) => {
   try {
     const { is_approved } = req.body;
     const toolId = req.params.id;
-    const userId = req.user;
     console.log(toolId);
 
     if (!toolId) {
@@ -84,7 +94,7 @@ export const submitTool = async (req, res) => {
 
     const tool = await Tool.findByIdAndUpdate(
       toolId,
-      { is_approved, submitted_by: userId },
+      { is_approved },
       { new: true }
     );
 
@@ -191,6 +201,7 @@ export const categoryPagination = async (req, res) => {
     });
   }
 };
+
 export const suggestions = async (req, res) => {
   try {
     const id = req.params.id;

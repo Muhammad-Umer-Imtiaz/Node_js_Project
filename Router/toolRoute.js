@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import {
+  AddTool,
   addTool,
   categoryPagination,
   pagination,
@@ -15,6 +16,7 @@ const router = express.Router();
 const upload = multer({ dest: "uploads/" });
 
 router.post("/add", isAuthenticated, upload.single("file"), addTool);
+router.post("/addtool", isAuthenticated, AddTool);
 router.post("/submit/:id", isAuthenticated, submitTool);
 router.post("/search", isAuthenticated, Search);
 router.get("/pagination", pagination);
