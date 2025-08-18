@@ -16,7 +16,11 @@ const signupSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    resetPasswordExpire: {
+      type: Date,
+    },
+    resetPasswordToken: { type: String },
   },
-  {timestamps : true}
+  { timestamps: true }
 );
 export const User = mongoose.model("User", signupSchema);

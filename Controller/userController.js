@@ -1,6 +1,8 @@
-import { User } from "../Model/userSchema.js";
+import { User } from "../Model/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { sendMail } from "../Utils/sendMail.js";
+import crypto from "crypto";
 
 export const signup = async (req, res) => {
   try {
@@ -117,4 +119,99 @@ export const getProfile = async (req, res) => {
     console.error(error);
     return res.status(500).json({ success: false, message: "Server error." });
   }
+};
+export const forgetPassword = async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res
+      .status(500)
+      .json({ message: "Please provide your email address.", success: true });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({
+      message: "User not found",
+      success: true,
+    });
+  }
+
+  // Generate token
+  const resetToken = crypto.randomBytes(20).toString("hex");
+
+  // Hash token & set expire
+  user.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 mins
+
+  await user.save({ validateBeforeSave: false });
+
+  // Create reset URL
+  const resetUrl = `${process.env.FRONTEDN_URL}/api/user/reset/${resetToken}`;
+
+  // Email message
+  const text = `
+    You requested a password reset. Please make a PUT request to: \n\n
+    This link is expire in 15 Minutes \n\n
+    ${resetUrl} \n
+    if you don't know What is this Please ignore it 
+  `;
+
+  try {
+    await sendMail({
+      email: user.email,
+      subject: "Password Reset Request From Tools Cover",
+      text,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Password reset link sent to ${user.email}`,
+    });
+  } catch (err) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+    return res
+      .status(500)
+      .json({ message: "Email could not be sent", success: false });
+  }
+};
+export const resetPassword = async (req, res, next) => {
+  const { password, confirmPassword } = req.body;
+  console.log(req.params);
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.id)
+    .digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+  console.log(user);
+  if (!user) {
+    return res.status(400).json({
+      message: "Reset token is invalid or has expired",
+      success: false,
+    });
+  }
+  if (password !== confirmPassword)
+    return res.status(400).json({
+      message: "Password and Confirm Password not Match",
+      success: false,
+    });
+  user.password = password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password reset successful",
+  });
 };

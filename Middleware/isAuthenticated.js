@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { User } from "../Model/userSchema.js";
+import { User } from "../Model/userModel.js";
 export const isAuthenticated = async (req, res, next) => {
   try {
     const token = req.cookies.token;
@@ -7,7 +7,6 @@ export const isAuthenticated = async (req, res, next) => {
     const decode = await jwt.verify(token, process.env.JWT_SECRET);
     if (!decode)
       return res.status(400).json({ message: "Token doesn't Match" });
-    console.log(decode);
     const user = await User.findById(decode.id).select("-password");
     if (!user) return res.status(400).json({ message: "user Not Found" });
     req.user = user;
