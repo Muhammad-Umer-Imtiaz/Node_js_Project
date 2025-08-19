@@ -1,6 +1,7 @@
 import fs from "fs";
 import csv from "csv-parser";
 import { Tool } from "../Model/toolsModel.js";
+import mongoose from "mongoose";
 
 //add tool through CSV
 export const addTool = async (req, res) => {
@@ -58,7 +59,6 @@ export const AddTool = async (req, res) => {
   try {
     const { name, link, thumbnail_url, image_url, overview } = req.body;
     const userID = req.user;
-    console.log(userID);
     if (!name || !link || !thumbnail_url || !image_url || !overview)
       return res
         .status(400)
@@ -85,7 +85,6 @@ export const submitTool = async (req, res) => {
   try {
     const { is_approved } = req.body;
     const toolId = req.params.id;
-    console.log(toolId);
 
     if (!toolId) {
       return res.status(400).json({ message: "ToolId not found" });
@@ -106,6 +105,34 @@ export const submitTool = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Internal Server Error", error: error.message });
+  }
+};
+export const findToolByUser = async (req, res) => {
+  try {
+    const id = req.user._id;
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: No user found",
+      });
+    }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID",
+      });
+    }
+    const tool = await Tool.find({ submitted_by: id });
+    if (!tool)
+      return res.status(400).json({ message: "No Tool Find you submit" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Get Tool Successfully", tool });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+    });
   }
 };
 
@@ -203,7 +230,7 @@ export const suggestions = async (req, res) => {
   try {
     const tag = req.query.tag; // ?tag=marketing
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
     if (!tag) {

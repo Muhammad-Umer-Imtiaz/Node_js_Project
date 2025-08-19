@@ -83,9 +83,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
   const [notFound, setNotFound] = useState(false);
   const [similarTools, setSimilarTools] = useState<SimilarTool[]>([]);
   const [similarToolsLoading, setSimilarToolsLoading] = useState(false);
-  const [similarToolsError, setSimilarToolsError] = useState<string | null>(
-    null
-  );
+  const [similarToolsError, setSimilarToolsError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showEmbedCode, setShowEmbedCode] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -141,7 +139,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     }, []);
 
     const addToFavorites = (tool: any) => {
-      // Ensure the tool object has all required properties
       const standardizedTool = {
         id: tool.id || parseInt(product.id),
         name: tool.name || product.name,
@@ -153,7 +150,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
         description: tool.description || product.description,
         category: tool.category || product.tag,
         link: tool.link || product.link,
-        ...tool, // Spread any additional properties
+        ...tool,
       };
 
       const updatedFavorites = [...favorites, standardizedTool];
@@ -223,22 +220,20 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
 
   const fetchSimilarTools = async (tag: string) => {
     if (!tag) return;
-    console.log("hello from Tag",tag)
+    console.log("hello from Tag", tag);
     setSimilarToolsLoading(true);
     setSimilarToolsError(null);
     try {
       const response = await fetch(
-        // `http://localhost:4000/api/tool/suggestions?tag=${encodeURIComponent(tag)}`
-`http://localhost:4000/api/tool/suggestions?tag=${tag}`
-     );
-      console.log(response)
+        `http://localhost:4000/api/tool/suggestions?tag=${tag}`
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data: SimilarToolsResponse = await response.json();
-      console.log(data)
+      console.log(data);
       setSimilarTools(data.results || []);
     } catch (error) {
       console.error('Error fetching similar tools:', error);
@@ -249,7 +244,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     }
   };
 
-  // Update the storeProductData function //data idr ha
   const storeProductData = (product: SimilarTool): void => {
     if (typeof window !== 'undefined') {
       try {
@@ -263,10 +257,10 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
           tag: product.category,
           tagIcon: '🤖',
           link: product.link,
-          rating: 4.5 + Math.random() * 0.5, // Random rating between 4.5-5.0
-          reviewCount: Math.floor(Math.random() * 500) + 50, // Random review count
-          isVerified: true, // Static verified for all tools
-          pricing: 'freemium', // Static pricing for all tools
+          rating: 4.5 + Math.random() * 0.5,
+          reviewCount: Math.floor(Math.random() * 500) + 50,
+          isVerified: true,
+          pricing: 'freemium',
           views: product.views || Math.floor(Math.random() * 10000) + 1000,
           clicks: product.click_count || Math.floor(Math.random() * 3000) + 500,
         };
@@ -280,24 +274,22 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     }
   };
 
-  // Update the loadProduct function in useEffect //yeh nahi ha
   useEffect(() => {
     const loadProduct = () => {
       const isNumericId = /^\d+$/.test(slug);
-      
+
       if (isNumericId) {
-        //come from Constraint
+        // Fixed: Match slug against item.id.toString() instead of item.name
         const featuredProduct = featuredProducts.find(
-          (item) => item.name === slug
+          (item) => item.id.toString() === slug
         );
         if (featuredProduct) {
-          // Add missing properties to featured product
           const enhancedProduct = {
             ...featuredProduct,
             rating: 4.5 + Math.random() * 0.5,
             reviewCount: Math.floor(Math.random() * 500) + 50,
-            isVerified: true, // Static verified
-            pricing: 'freemium', // Static pricing
+            isVerified: true,
+            pricing: 'freemium',
             views: Math.floor(Math.random() * 10000) + 1000,
             clicks: Math.floor(Math.random() * 3000) + 500,
           };
@@ -330,8 +322,8 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
           link: (searchParams.link as string) || '#',
           rating: 4.5 + Math.random() * 0.5,
           reviewCount: Math.floor(Math.random() * 500) + 50,
-          isVerified: true, // Static verified for all tools
-          pricing: 'freemium', // Static pricing for all tools
+          isVerified: true,
+          pricing: 'freemium',
           views:
             parseInt(searchParams.views as string) ||
             Math.floor(Math.random() * 10000) + 1000,
@@ -343,20 +335,20 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
         setLoading(false);
         return;
       }
-      //yeh raha asal data
+
       try {
         for (let i = 0; i < sessionStorage.length; i++) {
-          const key = sessionStorage.key(i);//issue yaha ha
+          const key = sessionStorage.key(i);
           if (key && key.startsWith('product_')) {
             const data = JSON.parse(sessionStorage.getItem(key) || '{}');
             const productSlug = createSlug(data.name);
 
-            if (productSlug == slug) {
-              // Ensure static values for stored products too
+            // Fixed: Use strict equality (===) instead of loose equality (==)
+            if (productSlug === slug) {
               const enhancedData = {
                 ...data,
-                isVerified: true, // Static verified
-                pricing: data.pricing || 'freemium', // Use existing or default to freemium
+                isVerified: true,
+                pricing: data.pricing || 'freemium',
               };
               setProduct(enhancedData);
               setLoading(false);
@@ -394,7 +386,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
 
     setIsSubmittingReview(true);
 
-    // Simulate API call
     setTimeout(() => {
       const review: Review = {
         id: Date.now().toString(),
@@ -706,37 +697,53 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
               <div className="prose prose-lg max-w-none">
                 <div className="bg-gradient-to-r from-[#f8faff] to-[#ecf2ff] rounded-2xl p-8 border border-[#cbd7ea]">
                   {product.overview ? (
-                  <><h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                      What is {product.name}?
-                    </h3><p className="text-gray-800 leading-relaxed mb-6">
+                    <>
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                        What is {product.name}?
+                      </h3>
+                      <p className="text-gray-800 leading-relaxed mb-6">
                         {product.overview}
-                      </p><h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                      </p>
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                         Key Features:
-                      </h3><p className="text-gray-800 leading-relaxed mb-6">
+                      </h3>
+                      <p className="text-gray-800 leading-relaxed mb-6">
                         {product.key_features}
-                      </p><h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                      </p>
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                         What you can do with {product.name}:
-                      </h3><p className="text-gray-800 leading-relaxed mb-6">
+                      </h3>
+                      <p className="text-gray-800 leading-relaxed mb-6">
                         {product.what_you_can_do_with}
-                      </p><h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                      </p>
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                         Benefits:
-                      </h3><p className="text-gray-800 leading-relaxed mb-6">
+                      </h3>
+                      <p className="text-gray-800 leading-relaxed mb-6">
                         {product.benefits}
-                      </p><h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                      </p>
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                         Pricing Plans
-                      </h3><p className="text-gray-800 leading-relaxed mb-6">
+                      </h3>
+                      <p className="text-gray-800 leading-relaxed mb-6">
                         {product.pricing_plans}
-                      </p><h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                      </p>
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                         Tips & Best Practices
-                      </h3><p className="text-gray-800 leading-relaxed mb-6">
+                      </h3>
+                      <p className="text-gray-800 leading-relaxed mb-6">
                         {product.tips_best_practices}
-                      </p><h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                      </p>
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-4">
                         Final Thoughts
-                      </h3><p className="text-gray-800 leading-relaxed mb-6">
+                      </h3>
+                      <p className="text-gray-800 leading-relaxed mb-6">
                         {product.final_take}
-                      </p></>
-                  ): (
-                  <><p className="text-gray-800 leading-relaxed mb-6">
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-800 leading-relaxed mb-6">
                         {product.name} represents a cutting-edge solution in the{' '}
                         {product.tag.toLowerCase()} space, designed to
                         revolutionize how professionals and businesses approach
@@ -744,19 +751,22 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                         combines advanced machine learning algorithms with
                         intuitive user interface design to deliver exceptional
                         results.
-                      </p><p className="text-gray-800 leading-relaxed mb-6">
-                          What sets {product.name} apart is its comprehensive
-                          approach to solving complex challenges through
-                          intelligent automation and data-driven insights. Users
-                          consistently report significant improvements in
-                          productivity, accuracy, and overall satisfaction.
-                        </p><p className="text-gray-800 leading-relaxed">
-                          With regular updates and continuous improvements based
-                          on user feedback, {product.name}
-                          continues to set new standards in the{' '}
-                          {product.tag.toLowerCase()} industry.
-                        </p></>
-                  )} 
+                      </p>
+                      <p className="text-gray-800 leading-relaxed mb-6">
+                        What sets {product.name} apart is its comprehensive
+                        approach to solving complex challenges through
+                        intelligent automation and data-driven insights. Users
+                        consistently report significant improvements in
+                        productivity, accuracy, and overall satisfaction.
+                      </p>
+                      <p className="text-gray-800 leading-relaxed">
+                        With regular updates and continuous improvements based
+                        on user feedback, {product.name}
+                        continues to set new standards in the{' '}
+                        {product.tag.toLowerCase()} industry.
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -899,7 +909,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Featured Tools */}
-
             <div
               className="bg-white rounded-2xl shadow-2xl p-6 border-2 border-transparent bg-clip-padding relative sticky top-8 overflow-hidden"
               style={{
@@ -907,12 +916,10 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                   '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)',
               }}
             >
-              {/* Gradient Border Effect */}
               <div className="absolute inset-0 rounded-2xl p-[2px] bg-[length:200%_100%] animate-gradient-x">
                 <div className="bg-white rounded-2xl w-full h-full"></div>
               </div>
 
-              {/* Content */}
               <div className="relative z-10 p-6 -m-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-gradient-to-r from-[#7d42fb] to-[#9b59ff] rounded-xl flex items-center justify-center">
@@ -961,12 +968,10 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
 
             {/* Promote Tool Widget */}
             <div className="bg-gradient-to-br from-[#7d42fb] to-[#9b59ff] rounded-2xl shadow-lg p-6 border border-purple-200 text-white relative overflow-hidden">
-              {/* Background Decoration */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
               <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full -ml-10 -mb-10"></div>
 
               <div className="relative z-10">
-                {/* Header */}
                 <div className="flex items-center gap-3 mb-4">
                   <div className="bg-white/20 rounded-full p-2">
                     <FiCode size={20} className="text-white" />
@@ -981,7 +986,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                   </div>
                 </div>
 
-                {/* Widget Preview */}
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4 border border-white/20">
                   <div className="bg-white rounded-lg p-3 text-center">
                     <div className="flex items-center justify-center gap-2">
@@ -1001,7 +1005,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                   </div>
                 </div>
 
-                {/* Widget Code */}
                 <div className="bg-gray-900/50 backdrop-blur-sm rounded-lg p-3 mb-4 border border-white/10">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-white/90 text-sm font-medium">
@@ -1047,7 +1050,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
@@ -1097,7 +1099,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                   </button>
                 </div>
 
-                {/* Footer */}
                 <div className="mt-4 pt-4 border-t border-white/10">
                   <p className="text-white/70 text-xs text-center">
                     Help others discover amazing AI tools like {product.name}
@@ -1284,7 +1285,10 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
           <section className="w-full mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
             {similarTools.map((tool) => (
               <Link
-                key={tool.id} href={`/tool/${createSlug(tool.name)}`}     >
+                key={tool.id}
+                href={`/tool/${createSlug(tool.name)}`}
+                onClick={() => storeProductData(tool)}
+              >
                 <div
                   key={tool.id}
                   className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-100 group hover:-translate-y-1 w-full max-w-sm mx-auto h-[280px] sm:h-[320px] lg:h-[340px] flex flex-col"

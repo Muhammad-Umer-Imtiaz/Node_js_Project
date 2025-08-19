@@ -4,6 +4,7 @@ import {
   AddTool,
   addTool,
   categoryPagination,
+  findToolByUser,
   pagination,
   Search,
   submitTool,
@@ -18,6 +19,7 @@ const upload = multer({ dest: "uploads/" });
 router.post("/add", isAuthenticated, upload.single("file"), addTool);
 router.post("/addtool", isAuthenticated, AddTool); //add tool by users
 router.post("/submit/:id", isAuthenticated, submitTool);
+router.get("/tool-by-user", isAuthenticated, findToolByUser);
 router.get("/search", Search);
 router.get("/pagination", pagination);
 router.get("/category", categoryPagination);

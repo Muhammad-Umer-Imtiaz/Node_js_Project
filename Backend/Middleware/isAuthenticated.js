@@ -12,6 +12,6 @@ export const isAuthenticated = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({ message: "Issue in Authentication" });
   }
 };

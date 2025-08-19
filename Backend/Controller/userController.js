@@ -55,7 +55,6 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    console.log(req.body);
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -154,8 +153,8 @@ export const forgetPassword = async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // Create reset URL
-  const resetUrl = `${process.env.FRONTEND_URL}/api/user/reset/${resetToken}`;
-
+  // const resetUrl = `${process.env.FRONTEND_URL}/api/user/reset/${resetToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
   // Email message
   const text = `
     You requested a password reset. Please make a PUT request to: \n\n
@@ -186,7 +185,6 @@ export const forgetPassword = async (req, res, next) => {
 };
 export const resetPassword = async (req, res, next) => {
   const { password, confirmPassword } = req.body;
-  console.log(req.params);
   const resetPasswordToken = crypto
     .createHash("sha256")
     .update(req.params.id)

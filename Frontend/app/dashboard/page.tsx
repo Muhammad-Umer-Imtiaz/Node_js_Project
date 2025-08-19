@@ -18,20 +18,22 @@ import {
 
 // Types based on API response
 type Tool = {
-  id: number;
+  _id: number;
   name: string;
   status: string;
-  submitted_date: string;
+  createdAt: string;
   is_approved: boolean;
 };
 
 type ApiResponse = {
+  success: boolean;
+  message: string;
+  tool: Tool[];
   stats: {
     total_tools: number;
     approved_tools: number;
     pending_tools: number;
   };
-  tools: Tool[];
 };
 
 const Dashboard = () => {
@@ -39,7 +41,7 @@ const Dashboard = () => {
   const [filteredTools, setFilteredTools] = useState<Tool[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [sortField, setSortField] = useState<keyof Tool>('submitted_date');
+  const [sortField, setSortField] = useState<keyof Tool>('createdAt');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -74,59 +76,41 @@ const Dashboard = () => {
     setError('');
     
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      console.log("Dashboard page the token is", token);
-      
+      const token = localStorage.getItem("token");
       if (!token) {
-        setError('No authentication token found');
+        setError("No authentication token found");
         setIsLoading(false);
         return;
       }
 
-      // Try stored auth scheme first if available
-      const savedAuthScheme = localStorage.getItem('authScheme') || 'Token';
-      
-      // First attempt with saved scheme or default 'Token'
-      console.log(`Trying with ${savedAuthScheme} authentication`);
-      let response = await fetch('https://ai-tools-backend-p3sk.onrender.com/api/user/submitted-tools/', {
-        method: 'GET',
+      const response = await fetch("http://localhost:4000/api/tool/tool-by-user", {
+        method: "GET",
         headers: {
-          'Authorization': `${savedAuthScheme} ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
+        credentials: "include",
       });
-
-      // If first attempt fails, try with alternative scheme
-      if (!response.ok && response.status === 401) {
-        const alternativeScheme = savedAuthScheme === 'Token' ? 'Bearer' : 'Token';
-        console.log(`${savedAuthScheme} authentication failed. Trying with ${alternativeScheme}`);
-        
-        response = await fetch('https://ai-tools-backend-p3sk.onrender.com/api/user/submitted-tools/', {
-          method: 'GET',
-          headers: {
-            'Authorization': `${alternativeScheme} ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        // If alternative scheme works, save it for future use
-        if (response.ok) {
-          console.log(`${alternativeScheme} authentication successful`);
-          localStorage.setItem('authScheme', alternativeScheme);
-        }
-      }
-
-      // Final check if any attempt succeeded
       if (!response.ok) {
-        throw new Error(`Failed to fetch tools: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error: ${response.status}`);
       }
 
       const data: ApiResponse = await response.json();
-      setTools(data.tools);
-      setStats(data.stats);
+      console.log(data.tool)
+      if (data.success) {
+        setTools(data.tool);
+        setStats({
+          total_tools: data.tool.length,
+          approved_tools: data.tool.filter((tool) => tool.status === 'Approved').length,
+          pending_tools: data.tool.filter((tool) => tool.status === 'Pending').length,
+        });
+      } else {
+        setError(data.message || "Failed to fetch tools");
+      }
     } catch (err) {
-      console.error('Error fetching tools:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch tools');
+      console.error("Error fetching tools:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch tools");
     } finally {
       setIsLoading(false);
     }
@@ -150,8 +134,7 @@ const Dashboard = () => {
 
     // Status filter
     if (statusFilter !== 'all') {
-      const isApproved = statusFilter === 'Approved';
-      filtered = filtered.filter(tool => tool.is_approved === isApproved);
+      filtered = filtered.filter(tool => tool.status === statusFilter);
     }
 
     // Sort
@@ -159,7 +142,7 @@ const Dashboard = () => {
       let aValue = a[sortField];
       let bValue = b[sortField];
 
-      if (sortField === 'submitted_date') {
+      if (sortField === 'createdAt') {
         const aDate = new Date(aValue as string);
         const bDate = new Date(bValue as string);
         if (aDate > bDate) return sortDirection === 'asc' ? 1 : -1;
@@ -184,10 +167,10 @@ const Dashboard = () => {
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (_id: number) => {
     if (window.confirm('Are you sure you want to delete this tool submission?')) {
       // TODO: Implement delete API call
-      console.log('Delete tool with id:', id);
+      console.log('Delete tool with id:', _id);
     }
   };
 
@@ -341,11 +324,11 @@ const Dashboard = () => {
                   </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('submitted_date')}
+                    onClick={() => handleSort('createdAt')}
                   >
                     <div className="flex items-center gap-1">
                       Date Submitted
-                      {sortField === 'submitted_date' && (
+                      {sortField === 'createdAt' && (
                         sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
                       )}
                     </div>
@@ -378,14 +361,14 @@ const Dashboard = () => {
                   </tr>
                 ) : (
                   filteredTools.map((tool) => (
-                    <tr key={tool.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={tool._id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{tool.name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {formatDate(tool.submitted_date)}
+                          {formatDate(tool.createdAt)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -409,7 +392,7 @@ const Dashboard = () => {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button 
-                            onClick={() => handleDelete(tool.id)}
+                            onClick={() => handleDelete(tool._id)}
                             className="text-red-600 hover:text-red-800 transition-colors"
                             title="Delete"
                           >

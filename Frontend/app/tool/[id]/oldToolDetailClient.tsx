@@ -889,7 +889,7 @@ export default function ToolDetailClient({
               {similarTools.map((tool) => (
                 <Link
                   key={tool.id}
-                  href={`/ai-tools/${createSlug(tool.name)}`}
+                  href={`/tool/${createSlug(tool.name)}`}
                   onClick={() => storeProductData(tool)}
                 >
                   <div

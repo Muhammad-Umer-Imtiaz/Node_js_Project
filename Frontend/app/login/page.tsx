@@ -212,7 +212,7 @@ const LoginPage = () => {
   };
 
   const handleForgotPassword = () => {
-    alert('Forgot password functionality would be implemented here');
+    window.location.href = '/forget-password';
   };
 
   return (
