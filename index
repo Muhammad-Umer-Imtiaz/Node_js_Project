@@ -1,11 +1,10 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  Plus, 
+import React, { useState, useEffect } from "react";
+import {
+  Search,
+  Eye,
+  Edit,
+  Trash2,
   Calendar,
   Clock,
   CheckCircle,
@@ -13,8 +12,8 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw,
+} from "lucide-react";
 
 // Types based on API response
 type Tool = {
@@ -33,57 +32,46 @@ type Tool = {
   updatedAt: string;
 };
 
-
 type ApiResponse = {
   success: boolean;
   message: string;
   tool: Tool[];
-  stats: {
-    total_tools: number;
-    approved_tools: number;
-    pending_tools: number;
-  };
 };
 
 const Dashboard = () => {
   const [tools, setTools] = useState<Tool[]>([]);
   const [filteredTools, setFilteredTools] = useState<Tool[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [sortField, setSortField] = useState<keyof Tool>('createdAt');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortField, setSortField] = useState<keyof Tool>("createdAt");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const [stats, setStats] = useState({
     total_tools: 0,
     approved_tools: 0,
-    pending_tools: 0
+    pending_tools: 0,
   });
-  const [error, setError] = useState<string>('');
 
   // Status configuration
   const statusConfig = {
-    'Approved': {
-      label: 'Approved',
-      color: 'text-green-700 bg-green-100',
-      icon: CheckCircle
+    Approved: {
+      label: "Approved",
+      color: "text-green-700 bg-green-100",
+      icon: CheckCircle,
     },
-    'Pending': {
-      label: 'Pending',
-      color: 'text-yellow-700 bg-yellow-100',
-      icon: Clock
+    Pending: {
+      label: "Pending",
+      color: "text-yellow-700 bg-yellow-100",
+      icon: Clock,
     },
-    'Rejected': {
-      label: 'Rejected',
-      color: 'text-red-700 bg-red-100',
-      icon: XCircle
-    }
   };
 
   // Fetch tools from API
   const fetchTools = async () => {
     setIsLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -100,15 +88,16 @@ const Dashboard = () => {
         },
         credentials: "include",
       });
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error: ${response.status}`);
       }
 
       const data: ApiResponse = await response.json();
-      console.log(data.tool)
       if (data.success) {
         setTools(data.tool);
+        // Compute stats from tool array
         setStats({
           total_tools: data.tool.length,
           approved_tools: data.tool.filter((tool) => tool.is_approved).length,
@@ -136,64 +125,72 @@ const Dashboard = () => {
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(tool =>
+      filtered = filtered.filter((tool) =>
         tool.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Status filter
-    if (statusFilter !== 'all') {
-const isApproved = statusFilter === "Approved";
-      filtered = filtered.filter((tool) => tool.is_approved === isApproved);    }
+    if (statusFilter !== "all") {
+      const isApproved = statusFilter === "Approved";
+      filtered = filtered.filter((tool) => tool.is_approved === isApproved);
+    }
 
     // Sort
     filtered = [...filtered].sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
 
-      if (sortField === 'createdAt') {
+      if (sortField === "createdAt") {
         const aDate = new Date(aValue as string);
         const bDate = new Date(bValue as string);
-        if (aDate > bDate) return sortDirection === 'asc' ? 1 : -1;
-        if (aDate < bDate) return sortDirection === 'asc' ? -1 : 1;
-        return 0;
+        return sortDirection === "asc"
+          ? aDate.getTime() - bDate.getTime()
+          : bDate.getTime() - aDate.getTime();
       }
 
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-      return 0;
+      if (sortField === "status") {
+        const aStatus = a.is_approved ? "Approved" : "Pending";
+        const bStatus = b.is_approved ? "Approved" : "Pending";
+        return sortDirection === "asc"
+          ? aStatus.localeCompare(bStatus)
+          : bStatus.localeCompare(aStatus);
+      }
+
+      return sortDirection === "asc"
+        ? (aValue as string).localeCompare(bValue as string)
+        : (bValue as string).localeCompare(aValue as string);
     });
 
     setFilteredTools(filtered);
   }, [tools, searchTerm, statusFilter, sortField, sortDirection]);
 
-  const handleSort = (field: keyof Tool) => {
+  const handleSort = (field: keyof Tool | "status") => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortField(field);
-      setSortDirection('asc');
+      setSortField(field as keyof Tool);
+      setSortDirection("asc");
     }
   };
 
-  const handleDelete = (_id: number) => {
-    if (window.confirm('Are you sure you want to delete this tool submission?')) {
-      // TODO: Implement delete API call
-      console.log('Delete tool with id:', _id);
+  const handleDelete = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this tool submission?")) {
+      console.log("Delete tool with id:", id);
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (isApproved: boolean) => {
+    const status = isApproved ? "Approved" : "Pending";
     const config = statusConfig[status as keyof typeof statusConfig];
-    if (!config) return null;
     const IconComponent = config.icon;
     return <IconComponent className="w-4 h-4" />;
   };
@@ -214,7 +211,9 @@ const isApproved = statusFilter === "Approved";
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
         <div className="text-center">
           <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Tools</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Error Loading Tools
+          </h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={fetchTools}
@@ -235,7 +234,9 @@ const isApproved = statusFilter === "Approved";
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600 mt-1">Manage your submitted AI tools</p>
+              <p className="text-gray-600 mt-1">
+                Manage your submitted AI tools
+              </p>
             </div>
             <div className="flex gap-3">
               <button
@@ -243,7 +244,9 @@ const isApproved = statusFilter === "Approved";
                 disabled={isLoading}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
               >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+                />
                 Refresh
               </button>
             </div>
@@ -255,7 +258,9 @@ const isApproved = statusFilter === "Approved";
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Total Submissions</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total_tools}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.total_tools}
+                  </p>
                 </div>
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                   <AlertCircle className="w-5 h-5 text-blue-600" />
@@ -266,7 +271,9 @@ const isApproved = statusFilter === "Approved";
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Approved</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.approved_tools}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {stats.approved_tools}
+                  </p>
                 </div>
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                   <CheckCircle className="w-5 h-5 text-green-600" />
@@ -277,7 +284,9 @@ const isApproved = statusFilter === "Approved";
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">{stats.pending_tools}</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {stats.pending_tools}
+                  </p>
                 </div>
                 <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
                   <Clock className="w-5 h-5 text-yellow-600" />
@@ -320,37 +329,46 @@ const isApproved = statusFilter === "Approved";
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th 
+                  <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('name')}
+                    onClick={() => handleSort("name")}
                   >
                     <div className="flex items-center gap-1">
                       Tool Name
-                      {sortField === 'name' && (
-                        sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-                      )}
+                      {sortField === "name" &&
+                        (sortDirection === "asc" ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        ))}
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('createdAt')}
+                    onClick={() => handleSort("createdAt")}
                   >
                     <div className="flex items-center gap-1">
                       Date Submitted
-                      {sortField === 'createdAt' && (
-                        sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-                      )}
+                      {sortField === "createdAt" &&
+                        (sortDirection === "asc" ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        ))}
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('status')}
+                    onClick={() => handleSort("status")}
                   >
                     <div className="flex items-center gap-1">
                       Status
-                      {sortField === 'status' && (
-                        sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
-                      )}
+                      {sortField === "status" &&
+                        (sortDirection === "asc" ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        ))}
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -361,18 +379,30 @@ const isApproved = statusFilter === "Approved";
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredTools.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                    <td
+                      colSpan={4}
+                      className="px-6 py-12 text-center text-gray-500"
+                    >
                       <div className="flex flex-col items-center gap-2">
                         <Search className="w-8 h-8 text-gray-300" />
-                        <p>{tools.length === 0 ? "No tools submitted yet" : "No tools found matching your criteria"}</p>
+                        <p>
+                          {tools.length === 0
+                            ? "No tools submitted yet"
+                            : "No tools found matching your criteria"}
+                        </p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   filteredTools.map((tool) => (
-                    <tr key={tool._id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={tool._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{tool.name}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {tool.name}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center gap-1">
@@ -394,19 +424,19 @@ const isApproved = statusFilter === "Approved";
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
-                          <button 
+                          <button
                             className="text-[#7d42fb] hover:text-[#6b35d1] transition-colors"
                             title="View Details"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button 
+                          <button
                             className="text-gray-600 hover:text-gray-800 transition-colors"
                             title="Edit"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleDelete(tool._id)}
                             className="text-red-600 hover:text-red-800 transition-colors"
                             title="Delete"
@@ -430,6 +460,14 @@ const isApproved = statusFilter === "Approved";
           </div>
         )}
       </div>
+
+      <style jsx global>{`
+        aside,
+        .category-sidebar,
+        nav {
+          display: none !important;
+        }
+      `}</style>
     </div>
   );
 };
