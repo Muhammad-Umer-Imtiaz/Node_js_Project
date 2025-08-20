@@ -74,6 +74,7 @@ const Navbar = () => {
     if (link.key === "submit") {
       const token = localStorage.getItem("token") || "";
       console.log("Token:", token);
+              window.location.href = "/submit";
       if (!token) {
         console.log("No token provided");
         window.location.href = "/login";
@@ -221,7 +222,7 @@ const Navbar = () => {
           ))}
 
           {isHydrated && isLoggedIn && (
-            <Popover className="relative">
+            <Popover className="relative z-20">
               <Popover.Button className="w-10 h-10 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#7d42fb] focus:ring-offset-2 overflow-hidden">
                 {userProfile.image ? (
                   <Image

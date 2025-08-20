@@ -9,7 +9,7 @@ export const NAV_LINKS = [
   { href: '/login', key: 'login', label: 'Login' },
   { href: '/signup', key: 'signup', label: 'Signup' },
   // { href: "/favorites", key: "favorites", label: "Favorites" },
-  { href: '', key: 'submit', label: 'Submit' },
+  { href: '/submit', key: 'submit', label: 'Submit' },
 ];
 
 export const categories = [

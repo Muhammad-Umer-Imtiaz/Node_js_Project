@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -140,8 +139,9 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     }, []);
 
     const addToFavorites = (tool: any) => {
+      const toolId = parseInt(tool.id || tool._id);
       const standardizedTool = {
-        id: tool._id || parseInt(product._id),
+        id: toolId,
         name: tool.name || product.name,
         image: tool.image || product.image || product.logo,
         overview: tool.overview || '',
@@ -175,8 +175,8 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     };
 
     const removeFromFavorites = (toolId: number) => {
-      const toolToRemove = favorites.find((tool) => tool._id === toolId);
-      const updatedFavorites = favorites.filter((tool) => tool._id !== toolId);
+      const toolToRemove = favorites.find((tool) => tool.id === toolId);
+      const updatedFavorites = favorites.filter((tool) => tool.id !== toolId);
       setFavorites(updatedFavorites);
       if (typeof window !== 'undefined') {
         localStorage.setItem('favoriteTools', JSON.stringify(updatedFavorites));
@@ -197,12 +197,13 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     };
 
     const isFavorite = (toolId: number) => {
-      return favorites.some((tool) => tool._id === toolId); // Fixed: Changed tool._id to tool.id
+      return favorites.some((tool) => tool.id === toolId);
     };
 
-    const toggleFavorite = (tool: { id: number }) => {
-      if (isFavorite(tool.id)) {
-        removeFromFavorites(tool.id);
+    const toggleFavorite = (tool: any) => {
+      const toolId = parseInt(tool.id || tool._id);
+      if (isFavorite(toolId)) {
+        removeFromFavorites(toolId);
       } else {
         addToFavorites(tool);
       }
@@ -348,6 +349,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
             if (productSlug === slug) {
               const enhancedData = {
                 ...data,
+                id: parseInt(data.id),
                 isVerified: true,
                 pricing: data.pricing || 'freemium',
               };
@@ -607,9 +609,9 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                   </a>
 
                   <button
-                    onClick={() => toggleFavorite({ id: parseInt(product.id) })}
+                    onClick={() => toggleFavorite(product)}
                     className={`px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${
-                      isFavorite(parseInt(product.id))
+                      isFavorite(parseInt(product.id)) 
                         ? 'bg-red-100 text-red-600 hover:bg-red-200'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
@@ -1280,7 +1282,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          toggleFavorite({ id: tool._id }); // Fixed: Consistent with isFavorite using tool.id
+                          toggleFavorite(tool);
                         }}
                       >
                         {isFavorite(tool._id) ? <FaHeart size={14} /> : <FiHeart size={14} />}
