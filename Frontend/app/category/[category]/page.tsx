@@ -7,7 +7,7 @@ import { FaHeart } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 type Tool = {
-  id: string | number;
+  _id: string | number;
   name: string;
   category: string;
   description: string;
@@ -20,7 +20,7 @@ type Tool = {
 };
 
 interface ProductTool {
-  id: number;
+  _id: number;
   name: string;
   link: string;
   image_url: string;
@@ -77,9 +77,9 @@ const useFavorites = () => {
   };
 
   const removeFromFavorites = (toolId: number) => {
-    const toolToRemove = favorites.find((tool) => tool.id === toolId);
+    const toolToRemove = favorites.find((tool) => tool._id === toolId);
 
-    const updatedFavorites = favorites.filter((tool) => tool.id !== toolId);
+    const updatedFavorites = favorites.filter((tool) => tool._id !== toolId);
     setFavorites(updatedFavorites);
     if (typeof window !== 'undefined') {
       localStorage.setItem('favoriteTools', JSON.stringify(updatedFavorites));
@@ -100,12 +100,12 @@ const useFavorites = () => {
   };
 
   const isFavorite = (toolId: number) => {
-    return favorites.some((tool) => tool.id === toolId);
+    return favorites.some((tool) => tool._id === toolId);
   };
 
-  const toggleFavorite = (tool: { id: number }) => {
-    if (isFavorite(tool.id)) {
-      removeFromFavorites(tool.id);
+  const toggleFavorite = (tool: { _id: number }) => {
+    if (isFavorite(tool._id)) {
+      removeFromFavorites(tool._id);
     } else {
       addToFavorites(tool);
     }
@@ -345,7 +345,7 @@ const CategoryPage = () => {
     if (typeof window !== 'undefined') {
       try {
         const productData = {
-          id: product.id.toString(),
+          _id: product._id.toString(),
           name: product.name,
           image: product.image_url,
           logo: product.image_url,
@@ -356,7 +356,7 @@ const CategoryPage = () => {
           thumbnail: product.thumbnail_url
         };
         sessionStorage.setItem(
-          `product_${product.id}`,
+          `product_${product._id}`,
           JSON.stringify(productData)
         );
       } catch (error) {
@@ -431,12 +431,12 @@ const CategoryPage = () => {
           <div className="w-full mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {displayedTools.map((tool) => (
               <Link
-                key={tool.id}
+                key={tool._id}
                 href={`/ai-tools/${createSlug(tool.name)}`}
                 onClick={() => storeProductData(tool)}
               >
                 <div
-                  key={tool.id}
+                  key={tool._id}
                   className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 border border-gray-100 cursor-pointer relative"
                   style={{
                     height: '169px',
@@ -456,7 +456,7 @@ const CategoryPage = () => {
                   <div className="absolute top-3 right-3 z-10">
                     <HeartButton
                       tool={{
-                        id: tool.id,
+                        _id: tool._id,
                         name: tool.name,
                         category: tool.category,
                         description: tool.description,
@@ -466,7 +466,7 @@ const CategoryPage = () => {
                         click_count: tool.click_count,
                         link: tool.link,
                       }}
-                      isFavorite={isFavorite(Number(tool.id))}
+                      isFavorite={isFavorite(Number(tool._id))}
                       onToggle={toggleFavorite}
                     />
                   </div>
