@@ -270,7 +270,7 @@ const CategoryPage = () => {
       setError(null);
 
       const response = await fetch(
-        `http://localhost:4000/api/tool/category?category=${category}&offset=0&limit=${TOOLS_PER_LOAD}`
+        `https://node-js-project-olive.vercel.app/api/tool/category?category=${category}&offset=0&limit=${TOOLS_PER_LOAD}`
       );
       console.log(response)
 
@@ -302,7 +302,7 @@ const CategoryPage = () => {
     setLoadingMore(true);
     try {
       const response = await fetch(
-        `http://localhost:4000/api/tool/category?category=${encodeURIComponent(categoryName)}&limit=${TOOLS_PER_LOAD}&offset=${currentOffset}`
+        `https://node-js-project-olive.vercel.app/api/tool/category?category=${encodeURIComponent(categoryName)}&limit=${TOOLS_PER_LOAD}&offset=${currentOffset}`
       );
 
       if (!response.ok) {

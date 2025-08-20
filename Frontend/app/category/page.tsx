@@ -171,7 +171,7 @@ const CategoryOverviewPage = () => {
     const categoryPromises = categories.map(async ({ label, emoji }) => {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/tool/category?category=${encodeURIComponent(label)}&offset=1&limit=20`
+          `https://node-js-project-olive.vercel.app/api/tool/category?category=${encodeURIComponent(label)}&offset=1&limit=20`
           // `/api/tools/category/?category=${encodeURIComponent(label)}&limit=6&offset=0`
         );
         console.log(response)
