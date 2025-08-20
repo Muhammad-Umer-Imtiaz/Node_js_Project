@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -71,7 +72,7 @@ const useFavorites = () => {
     }
   }, []);
 
-  const addToFavorites = (tool: any) => {
+  const addToFavorites = (tool: ProductTool) => {
     const updatedFavorites = [...favorites, tool];
     setFavorites(updatedFavorites);
     if (typeof window !== 'undefined') {
@@ -124,9 +125,9 @@ const useFavorites = () => {
     return favorites.some((tool) => tool._id === toolId);
   };
 
-  const toggleFavorite = (tool: { id: number }) => {
-    if (isFavorite(tool.id)) {
-      removeFromFavorites(tool.id);
+  const toggleFavorite = (tool: ProductTool) => {
+    if (isFavorite(tool._id)) {
+      removeFromFavorites(tool._id);
     } else {
       addToFavorites(tool);
     }
@@ -143,9 +144,9 @@ const useFavorites = () => {
 
 // Heart Button Component
 interface HeartButtonProps {
-  tool: any;
+  tool: ProductTool;
   isFavorite: boolean;
-  onToggle: (tool: any) => void;
+  onToggle: (tool: ProductTool) => void;
 }
 
 const HeartButton: React.FC<HeartButtonProps> = ({
@@ -298,35 +299,35 @@ const AllProduct: React.FC = () => {
   };
 
   const fetchInitialProducts = async () => {
-  try {
-    setLoading(true);
-    const response = await fetch(
-      `https://node-js-project-olive.vercel.app/api/tool/pagination?limit=${PRODUCTS_PER_LOAD}&offset=0`
-    );
-    console.log('Fetching initial products...');
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `https://node-js-project-olive.vercel.app/api/tool/pagination?limit=${PRODUCTS_PER_LOAD}&offset=0`
+      );
+      console.log('Fetching initial products...');
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const products: ProductTool[] = data.results || [];
+      setDisplayedProducts(products);
+      setCurrentOffset(PRODUCTS_PER_LOAD);
+
+      // If we got less than requested, we've reached the end
+      setHasMoreProducts(products.length === PRODUCTS_PER_LOAD);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'An error occurred while fetching products'
+      );
+      console.error('Error fetching products:', err);
+    } finally {
+      setLoading(false);
     }
-
-    const data = await response.json();
-    const products: ProductTool[] = data.results || [];
-    setDisplayedProducts(products);
-    setCurrentOffset(PRODUCTS_PER_LOAD);
-
-    // If we got less than requested, we've reached the end
-    setHasMoreProducts(products.length === PRODUCTS_PER_LOAD);
-  } catch (err) {
-    setError(
-      err instanceof Error
-        ? err.message
-        : 'An error occurred while fetching products'
-    );
-    console.error('Error fetching products:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleLoadMore = async () => {
     if (loadingMore || !hasMoreProducts) return;
@@ -335,20 +336,18 @@ const AllProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-                `https://node-js-project-olive.vercel.app//api/tool/pagination?limit=${PRODUCTS_PER_LOAD}&offset=${currentOffset}`
-
-        // `https://ai-tools-backend-p3sk.onrender.com/api/tools/pagination?limit=${PRODUCTS_PER_LOAD}&offset=${currentOffset}`
+        `https://node-js-project-olive.vercel.app/api/tool/pagination?limit=${PRODUCTS_PER_LOAD}&offset=${currentOffset}`
       );
-      console.log(response)
+      console.log(response);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data  = await response.json();
-      
-      const newProducts: ProductTool[] = data.results || []
-      
-console.log("Pagination API Data:", newProducts);
+      const data = await response.json();
+
+      const newProducts: ProductTool[] = data.results || [];
+
+      console.log('Pagination API Data:', newProducts);
       // Add new products to existing ones
       setDisplayedProducts((prev) => [...prev, ...newProducts]);
       setCurrentOffset((prev) => prev + PRODUCTS_PER_LOAD);
@@ -359,7 +358,9 @@ console.log("Pagination API Data:", newProducts);
       }
 
       console.log(
-        `Loaded ${newProducts.length} more products. Total: ${displayedProducts.length + newProducts.length}`
+        `Loaded ${newProducts.length} more products. Total: ${
+          displayedProducts.length + newProducts.length
+        }`
       );
     } catch (err) {
       setError(
@@ -509,7 +510,7 @@ console.log("Pagination API Data:", newProducts);
                     e.preventDefault();
                     e.stopPropagation();
                     const toolData = {
-                      id: Number(tool.id),
+                      _id: Number(tool.id),
                       name: tool.name,
                       link: tool.link,
                       image_url: tool.logo,
@@ -524,7 +525,7 @@ console.log("Pagination API Data:", newProducts);
                       category: tool.category,
                       submitted_by: null,
                     };
-                    console.log("Tool Data is",toolData)
+                    console.log('Tool Data is', toolData);
                     toggleFavorite(toolData);
                   }}
                 >
@@ -626,29 +627,11 @@ console.log("Pagination API Data:", newProducts);
                     </div>
                   </div>
                 </div>
-                <button
-                  className={`p-1.5 sm:p-2 transition-colors flex-shrink-0 ${
-                    isFavorite(tool._id)
-                      ? 'text-red-500'
-                      : 'text-gray-400 hover:text-red-500'
-                  }`}
-                  aria-label={
-                    isFavorite(tool._id)
-                      ? 'Remove from favorites'
-                      : 'Add to favorites'
-                  }
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleFavorite(tool);
-                  }}
-                >
-                  {isFavorite(tool._id) ? (
-                    <FaHeart size={14} />
-                  ) : (
-                    <FiHeart size={14} />
-                  )}
-                </button>
+                <HeartButton
+                  tool={tool}
+                  isFavorite={isFavorite(tool._id)}
+                  onToggle={toggleFavorite}
+                />
               </div>
 
               {/* Tool Description - Flexible content area */}
