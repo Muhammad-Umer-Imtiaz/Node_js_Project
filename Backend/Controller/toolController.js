@@ -26,27 +26,44 @@ export const addTool = async (req, res) => {
           what_you_can_do_with: row["What You Can Do With"],
           key_features: row["Key Features"],
           benefits: row.Benefits,
-          pricing: row["Pricing Plans"],
+          pricing_plans: row["Pricing Plans"],
           tips_best_practices: row["Tips & Best Practices"],
           faqs: row.FAQs,
           final_take: row["Final Take"],
           link: row["Tool URL"],
-          thumbnail_url: row["Thumnail URL"],
+          thumbnail_url: row["Thumnail URL"] || row["Thumbnail URL"], // Handle typo
           image_url: row["Logo URL"],
         });
       })
       .on("end", async () => {
         try {
           const savedTools = await Tool.insertMany(tools);
+          // Clean up temporary file
+          fs.unlink(filePath, (err) => {
+            if (err) console.error("Error deleting temp file:", err);
+          });
           return res.status(201).json({
             success: true,
             message: "CSV uploaded and data saved",
           });
         } catch (dbErr) {
+          // Clean up on error
+          fs.unlink(filePath, (err) => {
+            if (err) console.error("Error deleting temp file:", err);
+          });
           return res
             .status(500)
-            .json({ message: "DataBase Error", error: dbErr.message });
+            .json({ message: "Database Error", error: dbErr.message });
         }
+      })
+      .on("error", (err) => {
+        // Clean up on stream error
+        fs.unlink(filePath, (err) => {
+          if (err) console.error("Error deleting temp file:", err);
+        });
+        return res
+          .status(500)
+          .json({ message: "CSV Parsing Error", error: err.message });
       });
   } catch (error) {
     return res

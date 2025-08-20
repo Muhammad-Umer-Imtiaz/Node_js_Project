@@ -12,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:3000", 
+    origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -28,5 +28,7 @@ app.use("/api/tool", toolRoutes);
 
 // Connect DB
 dbConnection();
-
-export default app;
+const port = process.env.PORT 
+app.listen(port,()=>{
+console.log(`app is listen at port ${port}`)
+})
