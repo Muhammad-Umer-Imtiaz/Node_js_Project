@@ -546,7 +546,7 @@ const CategoryPage = () => {
   const generateDummyTools = (feature: string): Tool[] => {
     const baseTools = [
       {
-        id: Math.random() * 1000,
+        _id: Math.random() * 1000,
         name: `${feature} Pro`,
         description: `Advanced ${feature.toLowerCase()} tool with AI-powered capabilities. Perfect for professionals and teams looking to enhance their workflow.`,
         image_url: '/ai_logo.png',
@@ -557,7 +557,7 @@ const CategoryPage = () => {
         views: `${(Math.random() * 5 + 1).toFixed(1)}k`
       },
       {
-        id: Math.random() * 1000,
+        _id: Math.random() * 1000,
         name: `Smart ${feature}`,
         description: `Intelligent ${feature.toLowerCase()} solution that automates complex tasks and provides instant results with machine learning algorithms.`,
         image_url: '/ai_logo.png',
@@ -568,7 +568,7 @@ const CategoryPage = () => {
         views: `${(Math.random() * 5 + 1).toFixed(1)}k`
       },
       {
-        id: Math.random() * 1000,
+        _id: Math.random() * 1000,
         name: `${feature} Assistant`,
         description: `AI-powered ${feature.toLowerCase()} assistant that helps you create, optimize, and manage your projects efficiently.`,
         image_url: '/ai_logo.png',
@@ -579,7 +579,7 @@ const CategoryPage = () => {
         views: `${(Math.random() * 5 + 1).toFixed(1)}k`
       },
       {
-        id: Math.random() * 1000,
+        _id: Math.random() * 1000,
         name: `Ultra ${feature}`,
         description: `Next-generation ${feature.toLowerCase()} platform with cutting-edge AI technology for maximum productivity and efficiency.`,
         image_url: '/ai_logo.png',
@@ -590,7 +590,7 @@ const CategoryPage = () => {
         views: `${(Math.random() * 5 + 1).toFixed(1)}k`
       },
       {
-        id: Math.random() * 1000,
+        _id: Math.random() * 1000,
         name: `${feature} Master`,
         description: `Professional-grade ${feature.toLowerCase()} solution designed for enterprises and power users who demand excellence.`,
         image_url: '/ai_logo.png',
@@ -601,7 +601,7 @@ const CategoryPage = () => {
         views: `${(Math.random() * 5 + 1).toFixed(1)}k`
       },
       {
-        id: Math.random() * 1000,
+        _id: Math.random() * 1000,
         name: `AI ${feature} Hub`,
         description: `Comprehensive ${feature.toLowerCase()} ecosystem that combines multiple AI tools in one powerful, user-friendly platform.`,
         image_url: '/ai_logo.png',
