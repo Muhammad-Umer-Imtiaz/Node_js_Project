@@ -92,7 +92,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await fetch("http://localhost:4000/api/tool/tool-by-user", {
+      const response = await fetch(`https://node-js-project-olive.vercel.app//api/tool/tool-by-user`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

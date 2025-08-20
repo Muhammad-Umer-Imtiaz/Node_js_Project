@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { FaHeart } from 'react-icons/fa';
 
 interface Tool {
-  id: number;
+  _id : number;
   name: string;
   description: string;
   image_url?: string;
@@ -72,9 +72,9 @@ const addToFavorites = (tool: any) => {
 
 const removeFromFavorites = (toolId: number) => {
   // Find the tool name before removing (optional, for better UX)
-  const toolToRemove = favorites.find(tool => tool.id === toolId);
+  const toolToRemove = favorites.find(tool => tool._id === toolId);
   
-  const updatedFavorites = favorites.filter(tool => tool.id !== toolId);
+  const updatedFavorites = favorites.filter(tool => tool._id !== toolId);
   setFavorites(updatedFavorites);
   if (typeof window !== 'undefined') {
     localStorage.setItem('favoriteTools', JSON.stringify(updatedFavorites));
@@ -96,7 +96,7 @@ const removeFromFavorites = (toolId: number) => {
 };
 
   const isFavorite = (toolId: number) => {
-    return favorites.some(tool => tool.id === toolId);
+    return favorites.some(tool => tool._id === toolId);
   };
 
   const toggleFavorite = (tool: { id: number; }) => {
@@ -171,7 +171,7 @@ const CategoryOverviewPage = () => {
     const categoryPromises = categories.map(async ({ label, emoji }) => {
       try {
         const response = await fetch(
-          `http://localhost:4000/api/tool/category?category=${encodeURIComponent(label)}&offset=1&limit=20`
+          `https://node-js-project-olive.vercel.app/api/tool/category?category=${encodeURIComponent(label)}&offset=1&limit=20`
           // `/api/tools/category/?category=${encodeURIComponent(label)}&limit=6&offset=0`
         );
         console.log(response)
@@ -224,7 +224,7 @@ const CategoryOverviewPage = () => {
     if (typeof window !== 'undefined') {
       try {
         const productData = {
-          id: product.id.toString(),
+          id: product._id.toString(),
           name: product.name,
           thumbnail: product.thumbnail_url,
           logo: product.image_url,
@@ -234,7 +234,7 @@ const CategoryOverviewPage = () => {
           link: product.link,
         };
         sessionStorage.setItem(
-          `product_${product.id}`,
+          `product_${product._id}`,
           JSON.stringify(productData)
         );
       } catch (error) {
@@ -307,7 +307,7 @@ const CategoryOverviewPage = () => {
               <div className="w-full mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                 {tools.slice(0, 8).map((tool, index) => (
                   <Link
-                    key={tool.id}
+                    key={tool._id}
                     href={`/ai-tools/${createToolSlug(tool.name)}`}
                     onClick={() => storeProductData(tool)}
                   >
@@ -330,7 +330,7 @@ const CategoryOverviewPage = () => {
                       <div className="absolute top-3 right-3 z-10">
                         <HeartButton 
                           tool={{
-                            id: tool.id,
+                            id: tool._id,
                             name: tool.name,
                             category: tool.category,
                             description: tool.description,
@@ -340,7 +340,7 @@ const CategoryOverviewPage = () => {
                             click_count: tool.click_count,
                             link: tool.link
                           }}
-                          isFavorite={isFavorite(tool.id)}
+                          isFavorite={isFavorite(tool._id)}
                           onToggle={toggleFavorite}
                         />
                       </div>

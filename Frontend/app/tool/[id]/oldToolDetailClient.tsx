@@ -288,7 +288,7 @@ export default function ToolDetailClient({
 
     try {
       const response = await fetch(
-        `http://localhost:4000/api/tool/suggestions?tag=${encodeURIComponent(tag)}`
+        `https://node-js-project-olive.vercel.app/api/tool/suggestions?tag=${encodeURIComponent(tag)}`
         // `/api/tools/similar/?tag=${encodeURIComponent(tag)}`
       );
 

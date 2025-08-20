@@ -225,7 +225,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     setSimilarToolsError(null);
     try {
       const response = await fetch(
-        `http://localhost:4000/api/tool/suggestions?tag=${tag}`
+        `https://node-js-project-olive.vercel.app/api/tool/suggestions?tag=${tag}`
       );
 
       if (!response.ok) {

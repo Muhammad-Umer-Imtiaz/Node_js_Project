@@ -250,7 +250,7 @@ const SearchContent = () => {
     console.log("Searching for:", searchQuery);
 
     const response = await fetch(
-      `http://localhost:4000/api/tool/search?q=${encodeURIComponent(searchQuery)}`
+      `https://node-js-project-olive.vercel.app/api/tool/search?q=${encodeURIComponent(searchQuery)}`
     );
 
     console.log("API response:", response);
