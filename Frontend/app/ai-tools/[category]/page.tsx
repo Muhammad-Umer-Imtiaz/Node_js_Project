@@ -243,7 +243,7 @@ sessionStorage.setItem(storageKey, JSON.stringify(productData));
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 px-8">
           {getCurrentTools().map((tool) => (
             <Link
-              key={tool.id}
+              key={tool._id}
               href={`/ai-tools/${createToolSlug(tool.name)}`}
               onClick={() => storeProductData(tool)}
             >
