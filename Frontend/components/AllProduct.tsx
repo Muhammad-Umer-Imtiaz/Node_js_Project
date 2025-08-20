@@ -302,7 +302,7 @@ const AllProduct: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://node-js-project-olive.vercel.app/api/tool/pagination?limit=${PRODUCTS_PER_LOAD}&offset=0`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/tool/pagination?limit=${PRODUCTS_PER_LOAD}&offset=0`
       );
       console.log('Fetching initial products...');
 
@@ -336,7 +336,7 @@ const AllProduct: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://node-js-project-olive.vercel.app/api/tool/pagination?limit=${PRODUCTS_PER_LOAD}&offset=${currentOffset}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/tool/pagination?limit=${PRODUCTS_PER_LOAD}&offset=${currentOffset}`
       );
       console.log(response);
 

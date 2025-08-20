@@ -30,5 +30,6 @@ app.use("/api/tool", toolRoutes);
 dbConnection();
 const port = process.env.PORT;
 app.listen(port, () => {
+  console.log(`Frontend Url is ${process.env.FRONTEND_URL}`);
   console.log(`app is listen at port ${port}`);
 });

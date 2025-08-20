@@ -15,7 +15,7 @@ const ForgotPasswordPage = () => {
     setIsLoading(true);
     try {
       // Replace with your API endpoint
-      const res = await fetch(`https://node-js-project-olive.vercel.app/api/user/forget-password`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}api/user/forget-password`, {
         headers: {
           'Content-Type': 'application/json',
         },
