@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect } from 'react';
 import { 
@@ -33,7 +34,6 @@ type Tool = {
   updatedAt: string;
 };
 
-
 type ApiResponse = {
   success: boolean;
   message: string;
@@ -62,17 +62,17 @@ const Dashboard = () => {
 
   // Status configuration
   const statusConfig = {
-    'Approved': {
+    Approved: {
       label: 'Approved',
       color: 'text-green-700 bg-green-100',
       icon: CheckCircle
     },
-    'Pending': {
+    Pending: {
       label: 'Pending',
       color: 'text-yellow-700 bg-yellow-100',
       icon: Clock
     },
-    'Rejected': {
+    Rejected: {
       label: 'Rejected',
       color: 'text-red-700 bg-red-100',
       icon: XCircle
@@ -92,7 +92,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await fetch(`https://node-js-project-olive.vercel.app//api/tool/tool-by-user`, {
+      const response = await fetch(`https://node-js-project-olive.vercel.app/api/tool/tool-by-user`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -106,7 +106,7 @@ const Dashboard = () => {
       }
 
       const data: ApiResponse = await response.json();
-      console.log(data.tool)
+      console.log(data.tool);
       if (data.success) {
         setTools(data.tool);
         setStats({
@@ -143,8 +143,13 @@ const Dashboard = () => {
 
     // Status filter
     if (statusFilter !== 'all') {
-const isApproved = statusFilter === "Approved";
-      filtered = filtered.filter((tool) => tool.is_approved === isApproved);    }
+      filtered = filtered.filter((tool) => {
+        if (statusFilter === 'Approved') return tool.is_approved === true;
+        if (statusFilter === 'Pending') return tool.is_approved === false;
+        if (statusFilter === 'Rejected') return false; // Adjust based on actual Rejected logic
+        return true;
+      });
+    }
 
     // Sort
     filtered = [...filtered].sort((a, b) => {
@@ -154,9 +159,13 @@ const isApproved = statusFilter === "Approved";
       if (sortField === 'createdAt') {
         const aDate = new Date(aValue as string);
         const bDate = new Date(bValue as string);
-        if (aDate > bDate) return sortDirection === 'asc' ? 1 : -1;
-        if (aDate < bDate) return sortDirection === 'asc' ? -1 : 1;
-        return 0;
+        return sortDirection === 'asc' ? aDate.getTime() - bDate.getTime() : bDate.getTime() - aDate.getTime();
+      }
+
+      if (sortField === 'is_approved') { // Handle boolean sorting
+        aValue = a.is_approved ? 1 : 0;
+        bValue = b.is_approved ? 1 : 0;
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
       }
 
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
@@ -176,7 +185,7 @@ const isApproved = statusFilter === "Approved";
     }
   };
 
-  const handleDelete = (_id: number) => {
+  const handleDelete = (_id: string) => { // Fixed: Changed _id type to string
     if (window.confirm('Are you sure you want to delete this tool submission?')) {
       // TODO: Implement delete API call
       console.log('Delete tool with id:', _id);
@@ -191,7 +200,8 @@ const isApproved = statusFilter === "Approved";
     });
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (isApproved: boolean) => { // Fixed: Changed parameter to boolean
+    const status = isApproved ? 'Approved' : 'Pending';
     const config = statusConfig[status as keyof typeof statusConfig];
     if (!config) return null;
     const IconComponent = config.icon;
@@ -344,11 +354,11 @@ const isApproved = statusFilter === "Approved";
                   </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('status')}
+                    onClick={() => handleSort('is_approved')} // Fixed: Changed 'status' to 'is_approved'
                   >
                     <div className="flex items-center gap-1">
                       Status
-                      {sortField === 'status' && (
+                      {sortField === 'is_approved' && ( // Fixed: Changed 'status' to 'is_approved'
                         sortDirection === 'asc' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
                       )}
                     </div>
@@ -388,7 +398,7 @@ const isApproved = statusFilter === "Approved";
                             ].color
                           }`}
                         >
-                          {getStatusIcon(tool.is_approved)}
+                          {getStatusIcon(tool.is_approved)} {/* Fixed: Pass boolean */}
                           {tool.is_approved ? "Approved" : "Pending"}
                         </span>
                       </td>
