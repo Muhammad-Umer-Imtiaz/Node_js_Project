@@ -50,7 +50,7 @@ interface Review {
 }
 
 interface SimilarTool {
-  id: number;
+  _id: number;
   name: string;
   link: string;
   image_url: string;
@@ -140,7 +140,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
 
     const addToFavorites = (tool: any) => {
       const standardizedTool = {
-        id: tool.id || parseInt(product.id),
+        id: tool._id || parseInt(product._id),
         name: tool.name || product.name,
         image: tool.image || product.image || product.logo,
         overview: tool.overview || '',
@@ -196,7 +196,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     };
 
     const isFavorite = (toolId: number) => {
-      return favorites.some((tool) => tool.id === toolId);
+      return favorites.some((tool) => tool._id === toolId);
     };
 
     const toggleFavorite = (tool: { id: number }) => {
@@ -248,7 +248,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     if (typeof window !== 'undefined') {
       try {
         const productData = {
-          id: product.id.toString(),
+          id: product._id.toString(),
           name: product.name,
           image: product.image_url,
           thumbnail: product.thumbnail_url,
@@ -265,7 +265,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
           clicks: product.click_count || Math.floor(Math.random() * 3000) + 500,
         };
         sessionStorage.setItem(
-          `product_${product.id}`,
+          `product_${product._id}`,
           JSON.stringify(productData)
         );
       } catch (error) {
@@ -1285,12 +1285,12 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
           <section className="w-full mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
             {similarTools.map((tool) => (
               <Link
-                key={tool.id}
+                key={tool._id}
                 href={`/tool/${createSlug(tool.name)}`}
                 onClick={() => storeProductData(tool)}
               >
                 <div
-                  key={tool.id}
+                  key={tool._id}
                   className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-100 group hover:-translate-y-1 w-full max-w-sm mx-auto h-[280px] sm:h-[320px] lg:h-[340px] flex flex-col"
                 >
                   {/* Tool Header */}
@@ -1329,7 +1329,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        toggleFavorite({ id: tool.id });
+                        toggleFavorite({ id: tool._id });
                       }}
                     >
                       <FiHeart size={14} />
@@ -1373,7 +1373,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                       >
                         Try Now <FiExternalLink size={12} />
                       </Link>
-                      <div className="text-xs text-gray-500">#{tool.id}</div>
+                      <div className="text-xs text-gray-500">#{tool._id}</div>
                     </div>
                   </div>
                 </div>

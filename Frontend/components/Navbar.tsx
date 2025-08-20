@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { NAV_LINKS } from "@/constants";
 import { Menu, X, User, LayoutDashboard, Heart, LogOut } from "lucide-react";
-import { Popover, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Popover, Transition } from "@headlessui/react";
+import { Fragment } from "react";
 
 const Navbar = () => {
   const [theme, setTheme] = useState("light");
@@ -15,8 +15,8 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false); // Add hydration state
   const [userProfile, setUserProfile] = useState({
-    image: '',
-    name: ''
+    image: "",
+    name: "",
   });
 
   useEffect(() => {
@@ -24,7 +24,9 @@ const Navbar = () => {
     setIsHydrated(true);
 
     const storedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
 
     if (storedTheme === "dark" || (!storedTheme && prefersDark)) {
       document.documentElement.classList.add("dark");
@@ -38,17 +40,19 @@ const Navbar = () => {
     const token = localStorage.getItem("token");
     const profileImage = localStorage.getItem("userProfileImage");
     const userName = localStorage.getItem("userName");
-    
+
     const loggedIn = !!token;
     setIsLoggedIn(loggedIn);
     setUserProfile({
-      image: profileImage || '',
-      name: userName || ''
+      image: profileImage || "",
+      name: userName || "",
     });
 
     // Filter links based on login status
     const links = loggedIn
-      ? NAV_LINKS.filter((link) => link.label !== "Login" && link.label !== "Signup")
+      ? NAV_LINKS.filter(
+          (link) => link.label !== "Login" && link.label !== "Signup"
+        )
       : NAV_LINKS;
     setFilteredLinks(links);
   }, []);
@@ -63,55 +67,67 @@ const Navbar = () => {
     } else {
       document.documentElement.classList.remove("dark");
     }
-    forceUpdate(n => n + 1);
+    forceUpdate((n) => n + 1);
   };
 
   const handleNavigation = async (link: any) => {
-    if (link.key === 'submit') {
-      const token = localStorage.getItem('token') || "";
+    if (link.key === "submit") {
+      const token = localStorage.getItem("token") || "";
       console.log("Token:", token);
       if (!token) {
         console.log("No token provided");
-        window.location.href = '/login';
+        window.location.href = "/login";
         return;
       }
-      
+
       // First try with 'Token' authentication scheme
       try {
         console.log("trying with Token auth scheme");
-        const res = await fetch('https://ai-tools-backend-p3sk.onrender.com/api/check-login/', {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-        });
-        
+        const res = await fetch(
+          "https://ai-tools-backend-p3sk.onrender.com/api/check-login/",
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          }
+        );
+
         if (res.status === 200) {
           console.log("Token auth successful");
-          window.location.href = '/submit';
+          window.location.href = "/submit";
           return;
-        } 
-        
+        }
+
         // If first attempt fails, try with Bearer
-        console.log("Token auth failed with status", res.status, "- trying Bearer auth");
-        const bearerRes = await fetch('https://ai-tools-backend-p3sk.onrender.com/api/check-login/', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        
+        console.log(
+          "Token auth failed with status",
+          res.status,
+          "- trying Bearer auth"
+        );
+        const bearerRes = await fetch(
+          "https://ai-tools-backend-p3sk.onrender.com/api/check-login/",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         if (bearerRes.status === 200) {
           console.log("Bearer auth successful");
           // Store the successful auth scheme for future requests
-          localStorage.setItem('authScheme', 'Bearer');
-          window.location.href = '/submit';
+          localStorage.setItem("authScheme", "Bearer");
+          window.location.href = "/submit";
         } else {
-          console.log("Both auth schemes failed. Bearer status:", bearerRes.status);
-          window.location.href = '/login';
+          console.log(
+            "Both auth schemes failed. Bearer status:",
+            bearerRes.status
+          );
+          window.location.href = "/login";
         }
-        
       } catch (error) {
         console.error("API request failed:", error);
-        window.location.href = '/login';
+        window.location.href = "/login";
       }
     } else {
       console.log("Navigating to:", link.href);
@@ -121,17 +137,17 @@ const Navbar = () => {
 
   const handleUserMenuAction = (action: string) => {
     switch (action) {
-      case 'dashboard':
-        window.location.href = '/dashboard';
+      case "dashboard":
+        window.location.href = "/dashboard";
         break;
-      case 'favorites':
-        window.location.href = '/favorites';
+      case "favorites":
+        window.location.href = "/favorites";
         break;
-      case 'logout':
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+      case "logout":
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         setIsLoggedIn(false);
-        window.location.href = '/';
+        window.location.href = "/";
         break;
       default:
         break;
@@ -140,18 +156,18 @@ const Navbar = () => {
 
   const userMenuItems = [
     {
-      label: 'Dashboard',
-      action: 'dashboard',
+      label: "Dashboard",
+      action: "dashboard",
       icon: LayoutDashboard,
     },
     {
-      label: 'Favorites',
-      action: 'favorites',
+      label: "Favorites",
+      action: "favorites",
       icon: Heart,
     },
     {
-      label: 'Logout',
-      action: 'logout',
+      label: "Logout",
+      action: "logout",
       icon: LogOut,
     },
   ];
@@ -163,7 +179,13 @@ const Navbar = () => {
     <nav className="w-[100%] mx-auto flex justify-between px-4 py-5 bg-white transition-all duration-300 relative">
       {/* Logo */}
       <Link href="/" className="flex items-center justify-center gap-2">
-        <Image src="/logo.png" alt="ai" width={50} height={50} />
+        <Image
+          src="/logo.png"
+          alt="ai"
+          width={50}
+          height={50}
+          style={{ height: "auto", width: "auto" }}
+        />
         <p className="font-bold text-2xl text-[#121212]">Tools Cover</p>
       </Link>
 
@@ -172,7 +194,11 @@ const Navbar = () => {
         className="md:hidden block"
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
       >
-        {mobileMenuOpen ? <X size={30} color="black" /> : <Menu size={30} color="black"/>}
+        {mobileMenuOpen ? (
+          <X size={30} color="black" />
+        ) : (
+          <Menu size={30} color="black" />
+        )}
       </button>
 
       {/* Desktop Menu */}
@@ -183,9 +209,11 @@ const Navbar = () => {
               key={link.key}
               onClick={() => handleNavigation(link)}
               className={`cursor-pointer pb-1.5 transition-all
-                ${link.label === "Submit"
-                  ? "bg-[#7d42fb] text-white px-4 py-2 rounded-full font-semibold"
-                  : "text-black hover:font-bold"}
+                ${
+                  link.label === "Submit"
+                    ? "bg-[#7d42fb] text-white px-4 py-2 rounded-full font-semibold"
+                    : "text-black hover:font-bold"
+                }
               `}
             >
               {link.label}
@@ -196,18 +224,22 @@ const Navbar = () => {
             <Popover className="relative">
               <Popover.Button className="w-10 h-10 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#7d42fb] focus:ring-offset-2 overflow-hidden">
                 {userProfile.image ? (
-                  <Image 
-                    src={userProfile.image} 
-                    alt={userProfile.name || "User"} 
-                    width={40} 
-                    height={40} 
+                  <Image
+                    src={userProfile.image}
+                    alt={userProfile.name || "User"}
+                    width={40}
+                    height={40}
                     className="object-cover w-full h-full"
                     onError={(e) => {
                       // Fallback if image fails to load
                       const target = e.target as HTMLImageElement;
                       target.style.display = "none";
                       target.parentElement!.innerHTML = "U";
-                      target.parentElement!.classList.add("bg-[#7d42fb]", "text-white", "font-bold");
+                      target.parentElement!.classList.add(
+                        "bg-[#7d42fb]",
+                        "text-white",
+                        "font-bold"
+                      );
                     }}
                   />
                 ) : (
@@ -229,7 +261,9 @@ const Navbar = () => {
                 <Popover.Panel className="absolute right-0 z-10 mt-3 w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                   {userProfile.name && (
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">{userProfile.name}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {userProfile.name}
+                      </p>
                     </div>
                   )}
                   <div className="py-1">
@@ -276,18 +310,25 @@ const Navbar = () => {
               <div className="flex items-center gap-3 mb-3">
                 {userProfile.image ? (
                   <div className="w-8 h-8 rounded-full overflow-hidden">
-                    <Image 
-                      src={userProfile.image} 
-                      alt={userProfile.name || "User"} 
-                      width={32} 
-                      height={32} 
+                    <Image
+                      src={userProfile.image}
+                      alt={userProfile.name || "User"}
+                      width={32}
+                      height={32}
                       className="object-cover w-full h-full"
                       onError={(e) => {
                         // Fallback if image fails to load
                         const target = e.target as HTMLImageElement;
                         target.style.display = "none";
                         target.parentElement!.innerHTML = "U";
-                        target.parentElement!.classList.add("bg-[#7d42fb]", "text-white", "font-bold", "flex", "items-center", "justify-center");
+                        target.parentElement!.classList.add(
+                          "bg-[#7d42fb]",
+                          "text-white",
+                          "font-bold",
+                          "flex",
+                          "items-center",
+                          "justify-center"
+                        );
                       }}
                     />
                   </div>
@@ -296,7 +337,9 @@ const Navbar = () => {
                     U
                   </div>
                 )}
-                <span className="text-gray-700 font-medium">{userProfile.name || "User Menu"}</span>
+                <span className="text-gray-700 font-medium">
+                  {userProfile.name || "User Menu"}
+                </span>
               </div>
               {userMenuItems.map((item) => (
                 <button

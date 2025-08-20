@@ -45,9 +45,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
+      {/* <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      > */}
+       <body
+  className="antialiased"
+  suppressHydrationWarning={true}
+>
         <Navbar />
         <Toaster />
         <LayoutWrapper>{children}</LayoutWrapper>
