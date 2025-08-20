@@ -1,4 +1,5 @@
-'use client';
+
+"use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -24,14 +25,13 @@ interface ProductTool {
   developer: string | null;
   category: string;
   submitted_by: string | null;
-  overview?: string; 
-  key_features?: string; 
+  overview?: string;
+  key_features?: string;
   what_you_can_do_with?: string;
   benefits?: string;
   pricing_plans?: string;
   tips_best_practices?: string;
   final_take?: string;
-
 }
 
 interface SearchResponse {
@@ -40,6 +40,7 @@ interface SearchResponse {
   total_results: number;
   results: ProductTool[];
 }
+
 const createSlug = (name: string): string => {
   return name
     .toLowerCase()
@@ -94,7 +95,7 @@ const useFavorites = () => {
     }
   }, []);
 
-  const addToFavorites = (tool: any) => {
+  const addToFavorites = (tool: ProductTool) => { // Fixed: Type as ProductTool
     const updatedFavorites = [...favorites, tool];
     setFavorites(updatedFavorites);
     if (typeof window !== 'undefined') {
@@ -144,9 +145,9 @@ const useFavorites = () => {
     return favorites.some((tool) => tool._id === toolId);
   };
 
-  const toggleFavorite = (tool: { id: number }) => {
-    if (isFavorite(tool.id)) {
-      removeFromFavorites(tool.id);
+  const toggleFavorite = (tool: ProductTool) => { // Fixed: Changed from { id: number } to ProductTool
+    if (isFavorite(tool._id)) {
+      removeFromFavorites(tool._id);
     } else {
       addToFavorites(tool);
     }
@@ -162,9 +163,9 @@ const useFavorites = () => {
 };
 
 interface HeartButtonProps {
-  tool: any;
+  tool: ProductTool; // Fixed: Type as ProductTool
   isFavorite: boolean;
-  onToggle: (tool: any) => void;
+  onToggle: (tool: ProductTool) => void; // Fixed: Type as ProductTool
 }
 
 const HeartButton: React.FC<HeartButtonProps> = ({
@@ -238,40 +239,39 @@ const SearchContent = () => {
   }, [query]);
 
   const fetchSearchResults = async (searchQuery: string) => {
-  try {
-    if (!searchQuery.trim()) {
-      setError("Please enter a search term");
-      return;
+    try {
+      if (!searchQuery.trim()) {
+        setError("Please enter a search term");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      console.log("Searching for:", searchQuery);
+
+      const response = await fetch(
+        `https://node-js-project-olive.vercel.app/api/tool/search?q=${encodeURIComponent(searchQuery)}`
+      );
+
+      console.log("API response:", response);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: SearchResponse = await response.json();
+      console.log(data);
+      setSearchData(data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An error occurred while searching"
+      );
+      console.error("Search error:", err);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(true);
-    setError(null);
-
-    console.log("Searching for:", searchQuery);
-
-    const response = await fetch(
-      `https://node-js-project-olive.vercel.app/api/tool/search?q=${encodeURIComponent(searchQuery)}`
-    );
-
-    console.log("API response:", response);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: SearchResponse = await response.json();
-    console.log(data)
-    setSearchData(data);
-  } catch (err) {
-    setError(
-      err instanceof Error ? err.message : "An error occurred while searching"
-    );
-    console.error("Search error:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   // Loading skeleton component
   const LoadingSkeleton = () => (
@@ -416,106 +416,105 @@ const SearchContent = () => {
 
           {searchData.results.length > 0 ? (
             <section className="w-full mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
-        {searchData.results.map((tool) => (
-          <Link
-            key={tool._id}
-            href={`/tool/${createSlug(tool.name)}`}
-            onClick={() => storeProductData(tool)}
-          >
-            <div
-              key={tool._id}
-              className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-100 group hover:-translate-y-1 w-full max-w-sm mx-auto h-[280px] sm:h-[320px] lg:h-[340px] flex flex-col"
-            >
-              {/* Tool Header */}
-              <div className="flex items-start justify-between mb-3 sm:mb-4 flex-shrink-0">
-                <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#7d42fb]/10 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
-                    <img
-                      src={tool.image_url}
-                      alt={tool.name}
-                      className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm sm:text-base lg:text-lg text-gray-900 group-hover:text-[#7d42fb] transition-colors truncate">
-                      {tool.name}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex items-center">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <FiStar
-                            key={i}
-                            size={10}
-                            className={'text-yellow-500 fill-current'}
+              {searchData.results.map((tool) => (
+                <Link
+                  key={tool._id}
+                  href={`/tool/${createSlug(tool.name)}`}
+                  onClick={() => storeProductData(tool)}
+                >
+                  <div
+                    className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-100 group hover:-translate-y-1 w-full max-w-sm mx-auto h-[280px] sm:h-[320px] lg:h-[340px] flex flex-col"
+                  >
+                    {/* Tool Header */}
+                    <div className="flex items-start justify-between mb-3 sm:mb-4 flex-shrink-0">
+                      <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#7d42fb]/10 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <img
+                            src={tool.image_url}
+                            alt={tool.name}
+                            className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
                           />
-                        ))}
-                        <span className="text-xs text-gray-500 ml-1">5</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-sm sm:text-base lg:text-lg text-gray-900 group-hover:text-[#7d42fb] transition-colors truncate">
+                            {tool.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <FiStar
+                                  key={i}
+                                  size={10}
+                                  className={'text-yellow-500 fill-current'}
+                                />
+                              ))}
+                              <span className="text-xs text-gray-500 ml-1">5</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        className={`p-1.5 sm:p-2 transition-colors flex-shrink-0 ${
+                          isFavorite(tool._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                        }`}
+                        aria-label={isFavorite(tool._id) ? "Remove from favorites" : "Add to favorites"}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite(tool); // Fixed: tool is now correctly typed as ProductTool
+                        }}
+                      >
+                        {isFavorite(tool._id) ? <FaHeart size={14} /> : <FiHeart size={14} />}
+                      </button>
+                    </div>
+
+                    {/* Tool Description - Flexible content area */}
+                    <div className="flex-1 flex flex-col min-h-0">
+                      <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 leading-relaxed flex-shrink-0">
+                        {tool.description}
+                      </p>
+
+                      {/* Tool Tags */}
+                      <div className="flex flex-wrap gap-1 mb-3 sm:mb-4 flex-shrink-0">
+                        <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
+                          {tool.category}
+                        </span>
+                        <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
+                          tag number 2
+                        </span>
+                        <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
+                          tag number 3
+                        </span>
+                      </div>
+
+                      {/* Pricing Badge */}
+                      <div className="mb-3 sm:mb-4 flex-shrink-0">
+                        <span className="px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
+                          Free
+                        </span>
+                      </div>
+
+                      {/* Spacer to push footer to bottom */}
+                      <div className="flex-1"></div>
+
+                      {/* Footer - Always at bottom */}
+                      <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 flex-shrink-0 mt-auto">
+                        <Link
+                          href={tool.link}
+                          className="flex items-center gap-1 sm:gap-2 text-[#7d42fb] font-medium hover:text-[#6b35e0] transition-colors text-xs sm:text-sm"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Try Now <FiExternalLink size={12} />
+                        </Link>
+                        <div className="text-xs text-gray-500">#{tool._id}</div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <button
-                  className={`p-1.5 sm:p-2 transition-colors flex-shrink-0 ${
-                    isFavorite(tool._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                  }`}
-                  aria-label={isFavorite(tool._id) ? "Remove from favorites" : "Add to favorites"}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    toggleFavorite(tool);
-                  }}
-                >
-                  {isFavorite(tool._id) ? <FaHeart size={14} /> : <FiHeart size={14} />}
-                </button>
-              </div>
-
-              {/* Tool Description - Flexible content area */}
-              <div className="flex-1 flex flex-col min-h-0">
-                <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 leading-relaxed flex-shrink-0">
-                  {tool.description}
-                </p>
-
-                {/* Tool Tags */}
-                <div className="flex flex-wrap gap-1 mb-3 sm:mb-4 flex-shrink-0">
-                  <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
-                    {tool.category}
-                  </span>
-                  <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
-                    tag number 2
-                  </span>
-                  <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
-                    tag number 3
-                  </span>
-                </div>
-
-                {/* Pricing Badge */}
-                <div className="mb-3 sm:mb-4 flex-shrink-0">
-                  <span className="px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
-                    Free
-                  </span>
-                </div>
-
-                {/* Spacer to push footer to bottom */}
-                <div className="flex-1"></div>
-
-                {/* Footer - Always at bottom */}
-                <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 flex-shrink-0 mt-auto">
-                  <Link
-                    href={tool.link}
-                    className="flex items-center gap-1 sm:gap-2 text-[#7d42fb] font-medium hover:text-[#6b35e0] transition-colors text-xs sm:text-sm"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Try Now <FiExternalLink size={12} />
-                  </Link>
-                  <div className="text-xs text-gray-500">#{tool._id}</div>
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </section>
+                </Link>
+              ))}
+            </section>
           ) : (
             // No Results Found - Responsive
             <div className="flex flex-col items-center justify-center h-48 sm:h-64 px-4">
