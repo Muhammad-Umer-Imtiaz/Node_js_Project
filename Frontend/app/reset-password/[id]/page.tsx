@@ -44,7 +44,7 @@ const ResetPasswordPage = () => {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`https://node-js-project-olive.vercel.app/api/user/reset/${token}`, {
+      const res = await fetch(`http://localhost:4000/api/user/reset/${token}`, {
         headers: {
           'Content-Type': 'application/json',
         },

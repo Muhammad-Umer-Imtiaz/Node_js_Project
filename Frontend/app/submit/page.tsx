@@ -55,7 +55,7 @@ const SubmitToolForm = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`https://node-js-project-olive.vercel.app/api/tool/addtool`, {
+      const response = await fetch(`http://localhost:4000/api/tool/addtool`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

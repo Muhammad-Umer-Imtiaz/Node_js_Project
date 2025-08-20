@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -196,7 +197,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     };
 
     const isFavorite = (toolId: number) => {
-      return favorites.some((tool) => tool._id === toolId);
+      return favorites.some((tool) => tool.id === toolId); // Fixed: Changed tool._id to tool.id
     };
 
     const toggleFavorite = (tool: { id: number }) => {
@@ -1201,6 +1202,138 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
           )}
         </div>
 
+        {/* Similar Tools */}
+        <div className="m-16">
+          <h2 className="text-3xl font-bold mb-8 text-gray-900">Similar Tools</h2>
+
+          {similarToolsLoading && (
+            <div className="flex justify-center items-center h-32">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 border-4 border-[#7d42fb] border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-lg font-semibold text-gray-700">
+                  Loading similar tools...
+                </span>
+              </div>
+            </div>
+          )}
+
+          {similarToolsError && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+              <p className="text-red-600 font-medium">{similarToolsError}</p>
+            </div>
+          )}
+
+          {!similarToolsLoading &&
+            !similarToolsError &&
+            similarTools.length === 0 && (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+                <p className="text-gray-600 font-medium">
+                  No similar tools found for this category.
+                </p>
+              </div>
+            )}
+
+          {!similarToolsLoading && similarTools.length > 0 && (
+            <section className="w-full mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
+              {similarTools.map((tool) => (
+                <Link
+                  key={tool._id}
+                  href={`/tool/${createSlug(tool.name)}`}
+                  onClick={() => storeProductData(tool)}
+                >
+                  <div
+                    className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-100 group hover:-translate-y-1 w-full max-w-sm mx-auto h-[280px] sm:h-[320px] lg:h-[340px] flex flex-col"
+                  >
+                    {/* Tool Header */}
+                    <div className="flex items-start justify-between mb-3 sm:mb-4 flex-shrink-0">
+                      <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#7d42fb]/10 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <img
+                            src={tool.image_url}
+                            alt={tool.name}
+                            className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-sm sm:text-base lg:text-lg text-gray-900 group-hover:text-[#7d42fb] transition-colors truncate">
+                            {tool.name}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <FiStar
+                                  key={i}
+                                  size={10}
+                                  className={'text-yellow-500 fill-current'}
+                                />
+                              ))}
+                              <span className="text-xs text-gray-500 ml-1">
+                                5
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        className="p-1.5 sm:p-2 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
+                        aria-label={isFavorite(tool._id) ? 'Remove from favorites' : 'Add to favorites'}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite({ id: tool._id }); // Fixed: Consistent with isFavorite using tool.id
+                        }}
+                      >
+                        {isFavorite(tool._id) ? <FaHeart size={14} /> : <FiHeart size={14} />}
+                      </button>
+                    </div>
+
+                    {/* Tool Description - Flexible content area */}
+                    <div className="flex-1 flex flex-col min-h-0">
+                      <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 leading-relaxed flex-shrink-0">
+                        {tool.description}
+                      </p>
+
+                      {/* Tool Tags */}
+                      <div className="flex flex-wrap gap-1 mb-3 sm:mb-4 flex-shrink-0">
+                        <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
+                          {tool.category}
+                        </span>
+                        <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
+                          AI Tool
+                        </span>
+                      </div>
+
+                      {/* Pricing Badge */}
+                      <div className="mb-3 sm:mb-4 flex-shrink-0">
+                        <span className="px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
+                          Free
+                        </span>
+                      </div>
+
+                      {/* Spacer to push footer to bottom */}
+                      <div className="flex-1"></div>
+
+                      {/* Footer - Always at bottom */}
+                      <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 flex-shrink-0 mt-auto">
+                        <Link
+                          href={tool.link}
+                          className="flex items-center gap-1 sm:gap-2 text-[#7d42fb] font-medium hover:text-[#6b35e0] transition-colors text-xs sm:text-sm"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Try Now <FiExternalLink size={12} />
+                        </Link>
+                        <div className="text-xs text-gray-500">#{tool._id}</div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </section>
+          )}
+        </div>
+
         {/* Custom Styles */}
         <style jsx>{`
           .line-clamp-3 {
@@ -1249,138 +1382,6 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
             margin-bottom: 0;
           }
         `}</style>
-      </div>
-      {/* Similar Tools */}
-      <div className="m-16">
-        <h2 className="text-3xl font-bold mb-8 text-gray-900">Similar Tools</h2>
-
-        {similarToolsLoading && (
-          <div className="flex justify-center items-center h-32">
-            <div className="flex items-center gap-3">
-              <div className="w-6 h-6 border-4 border-[#7d42fb] border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-lg font-semibold text-gray-700">
-                Loading similar tools...
-              </span>
-            </div>
-          </div>
-        )}
-
-        {similarToolsError && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <p className="text-red-600 font-medium">{similarToolsError}</p>
-          </div>
-        )}
-
-        {!similarToolsLoading &&
-          !similarToolsError &&
-          similarTools.length === 0 && (
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-              <p className="text-gray-600 font-medium">
-                No similar tools found for this category.
-              </p>
-            </div>
-          )}
-
-        {!similarToolsLoading && similarTools.length > 0 && (
-          <section className="w-full mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8">
-            {similarTools.map((tool) => (
-              <Link
-                key={tool._id}
-                href={`/tool/${createSlug(tool.name)}`}
-                onClick={() => storeProductData(tool)}
-              >
-                <div
-                  key={tool._id}
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-100 group hover:-translate-y-1 w-full max-w-sm mx-auto h-[280px] sm:h-[320px] lg:h-[340px] flex flex-col"
-                >
-                  {/* Tool Header */}
-                  <div className="flex items-start justify-between mb-3 sm:mb-4 flex-shrink-0">
-                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#7d42fb]/10 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
-                        <img
-                          src={tool.image_url}
-                          alt={tool.name}
-                          className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-sm sm:text-base lg:text-lg text-gray-900 group-hover:text-[#7d42fb] transition-colors truncate">
-                          {tool.name}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex items-center">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <FiStar
-                                key={i}
-                                size={10}
-                                className={'text-yellow-500 fill-current'}
-                              />
-                            ))}
-                            <span className="text-xs text-gray-500 ml-1">
-                              5
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      className="p-1.5 sm:p-2 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
-                      aria-label="Add to favorites"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleFavorite({ id: tool._id });
-                      }}
-                    >
-                      <FiHeart size={14} />
-                    </button>
-                  </div>
-
-                  {/* Tool Description - Flexible content area */}
-                  <div className="flex-1 flex flex-col min-h-0">
-                    <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-3 leading-relaxed flex-shrink-0">
-                      {tool.description}
-                    </p>
-
-                    {/* Tool Tags */}
-                    <div className="flex flex-wrap gap-1 mb-3 sm:mb-4 flex-shrink-0">
-                      <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
-                        {tool.category}
-                      </span>
-                      <span className="px-2 py-1 bg-[#7d42fb]/10 text-[#7d42fb] text-xs rounded-full">
-                        AI Tool
-                      </span>
-                    </div>
-
-                    {/* Pricing Badge */}
-                    <div className="mb-3 sm:mb-4 flex-shrink-0">
-                      <span className="px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
-                        Free
-                      </span>
-                    </div>
-
-                    {/* Spacer to push footer to bottom */}
-                    <div className="flex-1"></div>
-
-                    {/* Footer - Always at bottom */}
-                    <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 flex-shrink-0 mt-auto">
-                      <Link
-                        href={tool.link}
-                        className="flex items-center gap-1 sm:gap-2 text-[#7d42fb] font-medium hover:text-[#6b35e0] transition-colors text-xs sm:text-sm"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Try Now <FiExternalLink size={12} />
-                      </Link>
-                      <div className="text-xs text-gray-500">#{tool._id}</div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </section>
-        )}
       </div>
     </div>
   );

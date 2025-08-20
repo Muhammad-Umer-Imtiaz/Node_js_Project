@@ -100,7 +100,7 @@ const LoginPage = () => {
     setIsLoading(true);
     try {
       console.log("trying to hit api");
-      const res = await fetch(`https://node-js-project-olive.vercel.app/api/user/login`, {
+      const res = await fetch(`http://localhost:4000/api/user/login`, {
         headers: {
           'Content-Type': 'application/json',
         },
