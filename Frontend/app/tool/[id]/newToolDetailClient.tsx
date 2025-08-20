@@ -175,8 +175,8 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     };
 
     const removeFromFavorites = (toolId: number) => {
-      const toolToRemove = favorites.find((tool) => tool.id === toolId);
-      const updatedFavorites = favorites.filter((tool) => tool.id !== toolId);
+      const toolToRemove = favorites.find((tool) => tool._id === toolId);
+      const updatedFavorites = favorites.filter((tool) => tool._id !== toolId);
       setFavorites(updatedFavorites);
       if (typeof window !== 'undefined') {
         localStorage.setItem('favoriteTools', JSON.stringify(updatedFavorites));
@@ -197,7 +197,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     };
 
     const isFavorite = (toolId: number) => {
-      return favorites.some((tool) => tool.id === toolId); // Fixed: Changed tool._id to tool.id
+      return favorites.some((tool) => tool._id === toolId); // Fixed: Changed tool._id to tool.id
     };
 
     const toggleFavorite = (tool: { id: number }) => {
