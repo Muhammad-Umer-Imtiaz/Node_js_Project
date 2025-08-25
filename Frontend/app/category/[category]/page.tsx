@@ -44,7 +44,12 @@ const useFavorites = () => {
       const savedFavorites = localStorage.getItem('favoriteTools');
       if (savedFavorites) {
         try {
-          setFavorites(JSON.parse(savedFavorites));
+          const parsed = JSON.parse(savedFavorites);
+          const standardized = parsed.map((t: any) => ({
+            ...t,
+            _id: parseInt(t._id || t.id),
+          }));
+          setFavorites(standardized);
         } catch (error) {
           console.error('Error parsing saved favorites:', error);
           localStorage.removeItem('favoriteTools');
@@ -54,48 +59,55 @@ const useFavorites = () => {
   }, []);
 
   const addToFavorites = (tool: any) => {
-    const updatedFavorites = [...favorites, tool];
-    setFavorites(updatedFavorites);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('favoriteTools', JSON.stringify(updatedFavorites));
-    }
-
-    console.log('wait');
-    toast.success(`${tool.name || 'Tool'} added to favorites!`, {
-      duration: 3000,
-      position: 'top-right',
-      style: {
-        background: '#7d42fb',
-        color: 'white',
-        fontWeight: 'bold',
-        borderRadius: '8px',
-        padding: '10px 15px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-      },
+    setFavorites((prev) => {
+      const toolId = parseInt(tool._id || tool.id);
+      if (prev.some((t) => t._id === toolId)) {
+        return prev;
+      }
+      const standardizedTool = {
+        _id: toolId,
+        ...tool,
+      };
+      const updatedFavorites = [...prev, standardizedTool];
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('favoriteTools', JSON.stringify(updatedFavorites));
+      }
+      toast.success(`${tool.name || 'Tool'} added to favorites!`, {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: '#7d42fb',
+          color: 'white',
+          fontWeight: 'bold',
+          borderRadius: '8px',
+          padding: '10px 15px',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+        },
+      });
+      return updatedFavorites;
     });
-    console.log('added');
   };
 
   const removeFromFavorites = (toolId: number) => {
-    const toolToRemove = favorites.find((tool) => tool._id === toolId);
-
-    const updatedFavorites = favorites.filter((tool) => tool._id !== toolId);
-    setFavorites(updatedFavorites);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('favoriteTools', JSON.stringify(updatedFavorites));
-    }
-
-    toast.success(`${toolToRemove?.name || 'Tool'} removed from favorites!`, {
-      duration: 3000,
-      position: 'top-right',
-      style: {
-        background: '#7d42fb',
-        color: 'white',
-        fontWeight: 'bold',
-        borderRadius: '8px',
-        padding: '10px 15px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-      },
+    setFavorites((prev) => {
+      const toolToRemove = prev.find((tool) => tool._id === toolId);
+      const updatedFavorites = prev.filter((tool) => tool._id !== toolId);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('favoriteTools', JSON.stringify(updatedFavorites));
+      }
+      toast.success(`${toolToRemove?.name || 'Tool'} removed from favorites!`, {
+        duration: 3000,
+        position: 'top-right',
+        style: {
+          background: '#7d42fb',
+          color: 'white',
+          fontWeight: 'bold',
+          borderRadius: '8px',
+          padding: '10px 15px',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+        },
+      });
+      return updatedFavorites;
     });
   };
 
@@ -104,8 +116,9 @@ const useFavorites = () => {
   };
 
   const toggleFavorite = (tool: { _id: number }) => {
-    if (isFavorite(tool._id)) {
-      removeFromFavorites(tool._id);
+    const toolId = parseInt(String(tool._id));
+    if (isFavorite(toolId)) {
+      removeFromFavorites(toolId);
     } else {
       addToFavorites(tool);
     }
@@ -270,9 +283,8 @@ const CategoryPage = () => {
       setError(null);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/tool/category?category=${category}&offset=0&limit=${TOOLS_PER_LOAD}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/tools/category/?category=${category}&limit=${TOOLS_PER_LOAD}&offset=0`
       );
-      console.log(response)
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -302,7 +314,7 @@ const CategoryPage = () => {
     setLoadingMore(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/tool/category?category=${encodeURIComponent(categoryName)}&limit=${TOOLS_PER_LOAD}&offset=${currentOffset}`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}api/tools/category/?category=${encodeURIComponent(categoryName)}&limit=${TOOLS_PER_LOAD}&offset=${currentOffset}`
       );
 
       if (!response.ok) {

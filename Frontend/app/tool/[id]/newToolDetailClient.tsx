@@ -139,9 +139,16 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     }, []);
 
     const addToFavorites = (tool: any) => {
-      const toolId = parseInt( tool._id || tool.id);
+      const toolId = tool._id || tool.id;
+      
+      // Check if tool is already in favorites
+      const isAlreadyFavorite = favorites.some((favTool) => favTool._id === toolId);
+      if (isAlreadyFavorite) {
+        return; // Don't add if already exists
+      }
+
       const standardizedTool = {
-        id: toolId,
+        _id: toolId, // Use _id consistently
         name: tool.name || product.name,
         image: tool.image || product.image || product.logo,
         overview: tool.overview || '',
@@ -201,7 +208,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     };
 
     const toggleFavorite = (tool: any) => {
-      const toolId = parseInt(tool.id || tool._id);
+      const toolId = tool._id || tool.id;
       if (isFavorite(toolId)) {
         removeFromFavorites(toolId);
       } else {
@@ -250,6 +257,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     if (typeof window !== 'undefined') {
       try {
         const productData = {
+          _id: product._id.toString(), // Use _id
           id: product._id.toString(),
           name: product.name,
           image: product.image_url,
@@ -288,6 +296,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
         if (featuredProduct) {
           const enhancedProduct = {
             ...featuredProduct,
+            _id: featuredProduct.id, // Add _id
             rating: 4.5 + Math.random() * 0.5,
             reviewCount: Math.floor(Math.random() * 500) + 50,
             isVerified: true,
@@ -303,6 +312,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
 
       if (searchParams.name && searchParams.description) {
         const productFromParams = {
+          _id: parseInt(slug) || Date.now(), // Add _id
           id: slug,
           name: searchParams.name as string,
           image:
@@ -349,6 +359,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
             if (productSlug === slug) {
               const enhancedData = {
                 ...data,
+                _id: parseInt(data._id || data.id), // Ensure _id exists
                 id: parseInt(data.id),
                 isVerified: true,
                 pricing: data.pricing || 'freemium',
@@ -482,7 +493,7 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
     }
   };
 
-  const embedCode = `<iframe src="https://aitools.com/embed/${product?.id}" width="300" height="200" frameborder="0"></iframe>`;
+  const embedCode = `<iframe src="https://aitools.com/embed/${product?._id || product?.id}" width="300" height="200" frameborder="0"></iframe>`;
 
   const copyEmbedCode = () => {
     navigator.clipboard.writeText(embedCode);
@@ -611,17 +622,17 @@ function ToolDetailClient({ slug, searchParams }: ToolDetailClientProps) {
                   <button
                     onClick={() => toggleFavorite(product)}
                     className={`px-6 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${
-                      isFavorite(parseInt(product.id)) 
+                      isFavorite(product._id || product.id) 
                         ? 'bg-red-100 text-red-600 hover:bg-red-200'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    {isFavorite(parseInt(product.id)) ? (
+                    {isFavorite(product._id || product.id) ? (
                       <FaHeart size={18} />
                     ) : (
                       <FiHeart size={18} />
                     )}
-                    {isFavorite(parseInt(product.id))
+                    {isFavorite(product._id || product.id)
                       ? 'Favorited'
                       : 'Add to Favorites'}
                   </button>
